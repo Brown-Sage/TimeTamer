@@ -1,0 +1,28 @@
+.Maintimer {
+    position: absolute;
+    top: 50%; 
+    left: 50%; 
+    border-radius: 40px;
+    transform: translate(-50%, -50%); 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 400px;
+    height: 15rem;
+    background-color: rgba(1, 1, 1, 0.3);
+    backdrop-filter: blur(7px);
+    font-size: 4rem;
+    flex-direction: column;
+}
+#timer{
+    font-size: larger;
+    
+}
+#startStopBtn{
+    margin-top: 30px;
+    font-size: 2rem;
+    background-color: whitesmoke;
+    border: none;
+    width: 30%;
+    border-radius: 5px;
+}
