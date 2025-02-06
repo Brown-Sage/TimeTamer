@@ -1,19 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import "../styles/Signin.css"; // Reusing the same CSS file
 
 export default function SignIn() {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
     <div className="container">
-      <button className="open-btn" onClick={() => setIsOpen(true)}>
-        Open Sign In
-      </button>
-
-      {isOpen && (
         <div className="overlay">
           <div className="popup-signin">
-            <button className="close-btn" onClick={() => setIsOpen(false)}>
+            <button className="close-btn" onClick={() => window.history.back()}>
               ✖
             </button>
             <h1>Create Your Account 🚀</h1>
@@ -28,7 +21,7 @@ export default function SignIn() {
             <button className="login-btn">Sign In</button>
           </div>
         </div>
-      )}
+      
     </div>
   );
 }

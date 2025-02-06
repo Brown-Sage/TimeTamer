@@ -1,28 +1,30 @@
+import { useNavigate } from "react-router-dom";
 import "../styles/Home.css";
 import Timer from "../components/Timer";
 import "../styles/Timer.css";
-import Login from "../components/Login";
+
 function Home() {
+    const navigate = useNavigate();
+
     return (
         <div className="container">
-            
             <div className="MainHead">
                 <div className="header-left">
                     <div style={{ color: 'white' }}>TimeTamer</div>
                 </div>
                 <div className="header-right">
-                    <button onClick={() => <Login />} >Log In</button>
-                    <button>Sign Up</button>
-                    
+                    <button onClick={() => navigate("/login")}>Log In</button>
+                    <button onClick={() => navigate("/signin")}>Sign Up</button>
                 </div>
             </div>
             <div className="Maintimer">
-                <div>Focus</div>
-                <div>Break</div>
-                <div>Long Break</div>
+                <div className="Options">
+                    <button      className="child1">Focus</button>
+                    <button className="child1">Break</button>
+                    <button className="child1">Long Break</button>
+                </div>
                 <Timer />
             </div>
-            
         </div>
     );
 }

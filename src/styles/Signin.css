@@ -10,6 +10,8 @@
 }
 .popup-signin h1{
     color: black;
+    font-size: 25px;
+    margin-bottom: 35px;
 }
 .popup-signin label{
     display: flex;

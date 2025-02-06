@@ -5,7 +5,7 @@
     border-radius: 40px;
     transform: translate(-50%, -50%);
     display: flex;
-    justify-content: center;
+    
     align-items: center;
     width: 400px;
     height: 15rem;
@@ -14,10 +14,25 @@
     font-size: 4rem;
     flex-direction: column;
 }
-.Maintimer div{
+.Options{
     display: flex;
-    font-size: 1rem;
+    width: 100%;
     flex-direction: row;
+    justify-content: space-around;
+}
+.child1{
+    font-size: 1rem;
+    padding: 7px;
+    font-size: large;
+    
+    
+  background-color: transparent;
+  border: none; 
+ 
+  color: inherit;
+  cursor: pointer;
+
+    
 }
 #timer{
     font-size: larger;
