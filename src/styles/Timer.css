@@ -5,12 +5,12 @@
     border-radius: 40px;
     transform: translate(-50%, -50%);
     display: flex;
-    
+    justify-content: space-around;
     align-items: center;
     width: 400px;
-    height: 15rem;
-    background-color: rgba(1, 1, 1, 0.3);
-    backdrop-filter: blur(7px);
+    height: 20rem;
+    background-color: rgba(1, 0, 10, 0.5);
+    backdrop-filter: blur(20px);
     font-size: 4rem;
     flex-direction: column;
 }
@@ -18,31 +18,101 @@
     display: flex;
     width: 100%;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: space-evenly;
 }
 .child1{
     font-size: 1rem;
     padding: 7px;
     font-size: large;
     
-    
+    width: 114px;
+    height: 40px;
   background-color: transparent;
   border: none; 
  
-  color: inherit;
+  color: white;
   cursor: pointer;
-
+}
+.child1:hover{
+    background-color: rgba(1, 1, 1, 0.3);
+    border-radius: 10px;
+    border:2px solid yellow;
+}
+.child1:active{
+    background-color: black;
+    border:2px solid yellow;
+    font-weight: bolder;
     
 }
 #timer{
-    font-size: larger;
+    font-size: 5.7rem;
+    font-weight: bolder;
     
 }
 #startStopBtn{
-    margin-top: 30px;
+    /* margin-top: 30px;
     font-size: 2rem;
     background-color: whitesmoke;
     border: none;
-    width: 30%;
+    width: 30%;;
     border-radius: 5px;
+
+
+/* CSS */
+/* #startStopBtn { */ 
+  align-items: center;
+  background-color: #fee6e3;
+  border: 2px solid #111;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: #111;
+  cursor: pointer;
+  display: flex;
+  font-family: Inter,sans-serif;
+  font-size: 16px;
+  height: 40px;
+  justify-content: center;
+  line-height: 24px;
+  max-width: 100%;
+  padding: 0 25px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+#startStopBtn:after {
+  background-color: #111;
+  border-radius: 8px;
+  content: "";
+  display: block;
+  height: 48px;
+  left: 0;
+  width: 100%;
+  position: absolute;
+  top: -2px;
+  transform: translate(8px, 8px);
+  transition: transform .2s ease-out;
+  z-index: -1;
+}
+
+#startStopBtn:hover:after {
+  transform: translate(0, 0);
+}
+
+#startStopBtn:active {
+  background-color: #ffdeda;
+  outline: 0;
+}
+
+#startStopBtn:hover {
+  outline: 0;
+}
+
+@media (min-width: 768px) {
+  #startStopBtn {
+    padding: 0 40px;
+  }
 }

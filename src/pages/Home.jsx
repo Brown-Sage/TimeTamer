@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import "../styles/Home.css";
 import Timer from "../components/Timer";
 import "../styles/Timer.css";
+import { MdOutlineMenuOpen } from "react-icons/md";
 
 function Home() {
     const navigate = useNavigate();
@@ -10,7 +11,7 @@ function Home() {
         <div className="container">
             <div className="MainHead">
                 <div className="header-left">
-                    <div style={{ color: 'white' }}>TimeTamer</div>
+                    <MdOutlineMenuOpen />
                 </div>
                 <div className="header-right">
                     <button onClick={() => navigate("/login")}>Log In</button>
