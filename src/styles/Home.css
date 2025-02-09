@@ -60,9 +60,10 @@ html, body{
     height: 2.5rem;
 }
 .header-right button{
-    background-color: whitesmoke;
+    background-color: transparent;
+    color: greenyellow;
     font-size: 1rem;
-    border: 2px solid black;
+    border: 2px solid greenyellow;
     height: 2rem;
     width: 5rem;
     margin: 0 5%;
@@ -73,14 +74,19 @@ html, body{
     transition: 0.2s;
     background-color: black;
     color: white;
+    box-shadow: 0 0 10px greenyellow, 0 0 20px greenyellow, 0 0 40px greenyellow;
+    transform: scale(1.05);
 }
 .header-right button:nth-child(2){
-    background-color: rgb(244, 66, 66);
-    color: white;
+    background-color: transparent;
+    color: red;
+    border-color: rgb(255, 83, 83);
 }
 .header-right button:nth-child(2):hover{
     transition: 0.2s;
-    background-color: white;
+    background-color: black;
+    box-shadow: 0 0 10px #cd2020, 0 0 20px #cd2020, 0 0 40px #cd2020;
+    transform: scale(1.05);
     color: rgb(244, 66, 66);
 }
 /* #Bgvideo{
