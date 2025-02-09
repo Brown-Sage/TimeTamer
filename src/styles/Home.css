@@ -8,9 +8,11 @@ html, body{
     width: 100%;
     height: 100vh;
     display: flex;
-    background-image: url("/src/assets/wallhaven-l88mxr.jpg");
+    background-image: url("/src/assets/Plane_52.jpg");
+    justify-content: space-between;
     background-size: cover;
     background-position: center;
+    flex-direction: column;
     color: white;
 }
 .MainHead{
@@ -32,6 +34,10 @@ html, body{
     color: white;
     backdrop-filter: blur(10px); */
 }
+.header-left button{
+    background: rgba(0, 0, 0, 0.5);
+    background-color: transparent;
+}
 .pfp{
     width: 2.5rem;
     height: 2.5rem;
@@ -52,17 +58,16 @@ html, body{
     justify-content: flex-end;
     width: 12rem;
     height: 2.5rem;
-    background-color: ;
 }
 .header-right button{
     background-color: whitesmoke;
     font-size: 1rem;
+    border: 2px solid black;
     height: 2rem;
     width: 5rem;
     margin: 0 5%;
     font-weight: bold;
     border-radius: 5px;
-    border: none;
 }
 .header-right button:hover{
     transition: 0.2s;

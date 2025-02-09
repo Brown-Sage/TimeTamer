@@ -2,15 +2,16 @@
     position: absolute;
     top: 50%; 
     left: 50%; 
-    border-radius: 40px;
+    border-radius: 30px;
+    border: 1px solid white;
     transform: translate(-50%, -50%);
     display: flex;
     justify-content: space-around;
     align-items: center;
     width: 400px;
     height: 20rem;
-    background-color: rgba(1, 0, 10, 0.5);
-    backdrop-filter: blur(20px);
+    background-color: rgba(1, 0, 10, 0.4);
+    backdrop-filter: blur(5px);
     font-size: 4rem;
     flex-direction: column;
 }
@@ -21,26 +22,32 @@
     justify-content: space-evenly;
 }
 .child1{
-    font-size: 1rem;
-    padding: 7px;
-    font-size: large;
-    
-    width: 114px;
+    padding:0;
+    font-size: small;
+    width: 84px;
     height: 40px;
-  background-color: transparent;
-  border: none; 
- 
-  color: white;
-  cursor: pointer;
+    background-color: transparent;
+    border: whitesmoke solid 1px ; 
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
 }
 .child1:hover{
+    transition-duration: 0.2s;
     background-color: rgba(1, 1, 1, 0.3);
     border-radius: 10px;
-    border:2px solid yellow;
+    width: 94px;
+    font-size: medium;
+    font-weight: bold;
+    color: rgb(249, 177, 10);
+    border:2px solid rgb(249, 176, 8);
 }
 .child1:active{
     background-color: black;
-    border:2px solid yellow;
+    border:2px solid rgb(11, 198, 245);
+    width: 104px;
+    color: rgb(11, 198, 245);
+    border-radius: 10px;
     font-weight: bolder;
     
 }
