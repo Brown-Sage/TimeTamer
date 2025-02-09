@@ -89,15 +89,8 @@ html, body{
     transform: scale(1.05);
     color: rgb(244, 66, 66);
 }
-/* #Bgvideo{
-    height: 100%;
-    width: 100%;
-    float: left;
-    top: 0;
-    background-size: cover;
-    background-position: center;
-    padding: none;
-    position: ; 
-
-} */
+.spotify{
+    width: 30%;
+    height: rem;
+}
  

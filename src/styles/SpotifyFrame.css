@@ -1,0 +1,9 @@
+.spotify{
+    position: absolute;
+    top: 15%;
+    width: 20rem;
+    display: flex;
+    justify-content: center;
+    align-self: flex-end;
+
+}

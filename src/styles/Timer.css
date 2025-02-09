@@ -1,6 +1,6 @@
 .Maintimer {
     position: absolute;
-    top: 50%; 
+    top: 60%; 
     left: 50%; 
     border-radius: 30px;
     border: 1px solid white;
@@ -9,7 +9,7 @@
     justify-content: space-around;
     align-items: center;
     width: 400px;
-    height: 20rem;
+    height: 19rem;
     background-color: rgba(1, 0, 10, 0.4);
     backdrop-filter: blur(5px);
     font-size: 4rem;

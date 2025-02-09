@@ -4,6 +4,8 @@ import Timer from "../components/Timer";
 import "../styles/Timer.css";
 import { MdOutlineMenuOpen } from "react-icons/md";
 import Menu from "../components/Menu";
+import SpotifyFrame from "../components/SpotifyFrame"
+import "../styles/SpotifyFrame.css"
 
 function Home() {
     const navigate = useNavigate();
@@ -19,6 +21,11 @@ function Home() {
                     <button onClick={() => navigate("/signin")}>Sign Up</button>
                 </div>
             </div>
+
+            <div className ="spotify" >
+                    <SpotifyFrame trackUri="7ouMYWpwJ422jRcDASZB7P" /> 
+            </div>
+            
             <div className="Maintimer">
                 <div className="Options">
                     <button className="child1">Focus</button>
@@ -26,8 +33,9 @@ function Home() {
                     <button className="child1">Long Break</button>
                 </div>
                 <Timer />
-                
             </div>
+            
+            
             <Menu />
         </div>
     );
