@@ -27,6 +27,7 @@ function Timer() {
                             return prevMinutes + 1;
                         });
                         return 0;
+                        
                     }
                     return prevSeconds + 1;
                 });

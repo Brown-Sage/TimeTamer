@@ -79,15 +79,15 @@ html, body{
 }
 .header-right button:nth-child(2){
     background-color: transparent;
-    color: red;
-    border-color: rgb(255, 83, 83);
+    color: whitesmoke;
+    border-color: whitesmoke;
 }
 .header-right button:nth-child(2):hover{
     transition: 0.2s;
     background-color: black;
-    box-shadow: 0 0 10px #cd2020, 0 0 20px #cd2020, 0 0 40px #cd2020;
+    box-shadow: 0 0 10px whitesmoke, 0 0 20px whitesmoke, 0 0 40px whitesmoke;
     transform: scale(1.05);
-    color: rgb(244, 66, 66);
+    color: whitesmoke;
 }
 .spotify{
     width: 30%;
