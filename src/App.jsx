@@ -12,7 +12,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signin" element={<SignIn />} />
-        
+        <Route path="/home/:user/" element={<Home />} />
       </Routes>
       <ToastContainer
                 position="top-right"
