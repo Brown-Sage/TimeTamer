@@ -3,33 +3,44 @@ import "../styles/Timer.css";
 
 function Timer() {
     const [hours, setHours] = useState(0);
-    const [minutes, setMinutes] = useState(0);
+    const [minutes, setMinutes] = useState(50);
     const [seconds, setSeconds] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
 
     const updateData = () => {
         return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     };
+
     const startStop = () => {
         setIsRunning((prev) => !prev);
     };
+
     useEffect(() => {
         let interval;
         if (isRunning) {
             interval = setInterval(() => {
                 setSeconds((prevSeconds) => {
-                    if (prevSeconds === 59) {
-                        setMinutes((prevMinutes) => {
-                            if (prevMinutes === 59) {
-                                setHours((prevHours) => prevHours + 1);
+                    if (prevSeconds === 0) {
+                        if (minutes === 0) {
+                            if (hours === 0) {
+                                
+                                clearInterval(interval);
+                                setIsRunning(false);
+                                alert("Pomodoro timer finished!");
+                                return 0;
+                            } else {
+                                
+                                setHours((prevHours) => prevHours - 1);
+                                setMinutes(59);
                                 return 0;
                             }
-                            return prevMinutes + 1;
-                        });
-                        return 0;
-                        
+                        } else {
+                            
+                            setMinutes((prevMinutes) => prevMinutes - 1);
+                            return 59;
+                        }
                     }
-                    return prevSeconds + 1;
+                    return prevSeconds - 1;
                 });
             }, 1000);
         } else {
@@ -37,7 +48,7 @@ function Timer() {
         }
 
         return () => clearInterval(interval);
-    }, [isRunning]);
+    }, [isRunning, minutes, seconds, hours]);
 
     return (
         <>
