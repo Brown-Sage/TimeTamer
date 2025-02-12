@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "../styles/Timer.css";
 
 function Timer() {
@@ -15,6 +15,13 @@ function Timer() {
         setIsRunning((prev) => !prev);
     };
 
+    const handleBreak = () => {
+        setIsRunning(false);
+        setHours(0);
+        setMinutes(10);
+        setSeconds(0);
+    };
+
     useEffect(() => {
         let interval;
         if (isRunning) {
@@ -23,19 +30,16 @@ function Timer() {
                     if (prevSeconds === 0) {
                         if (minutes === 0) {
                             if (hours === 0) {
-                                
                                 clearInterval(interval);
                                 setIsRunning(false);
                                 alert("Pomodoro timer finished!");
                                 return 0;
                             } else {
-                                
                                 setHours((prevHours) => prevHours - 1);
                                 setMinutes(59);
                                 return 0;
                             }
                         } else {
-                            
                             setMinutes((prevMinutes) => prevMinutes - 1);
                             return 59;
                         }
@@ -46,9 +50,14 @@ function Timer() {
         } else {
             clearInterval(interval);
         }
-
         return () => clearInterval(interval);
     }, [isRunning, minutes, seconds, hours]);
+
+    // Expose handleBreak to parent component
+    useEffect(() => {
+        // Make handleBreak available to parent
+        window.handleBreakTimer = handleBreak;
+    }, []);
 
     return (
         <>
