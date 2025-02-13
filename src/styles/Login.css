@@ -62,13 +62,14 @@
 }
 
 /* Input fields */
-.input-box {
+/* .input-box {
   width: 90%;
   padding: 10px;
   margin: 10px 0;
+  color: black;
   border: 1px solid #ccc;
-  border-radius: 5px;
-}
+  border-radius: 50px;
+} */
 
 /* Login button */
 .login-btn {
