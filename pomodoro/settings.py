@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-$k_i1br(j&_y@ewc3o$b6&9_i4#n2y87z#pqtpxn&(rt=!m!)8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0','127.0.0.1']
+ALLOWED_HOSTS = ['0.0.0.0','127.0.0.1','192.168.2.43','localhost']
 
 
 # Application definition
@@ -57,6 +57,7 @@ ROOT_URLCONF = 'pomodoro.urls'
 STATICFILES_DIRS = [
     # BASE_DIR / 'frontend/dist/assets',
     os.path.join(BASE_DIR, 'frontend', 'dist'),
+    os.path.join(BASE_DIR, "frontend", "public"),
 ]
 
 TEMPLATES = [

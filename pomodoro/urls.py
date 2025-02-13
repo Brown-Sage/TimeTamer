@@ -31,6 +31,10 @@ urlpatterns = [
     path('api/register/', UserController.as_view(), name='register'),
     path('api/login/', AuthController.as_view(), name='login'),
     path('api/logout/', AuthController.as_view(), name='delete'),
+    
+    path('manifest.json', TemplateView.as_view(template_name='manifest.json', content_type='application/json')),
+    path('service-worker.js', TemplateView.as_view(template_name='service-worker.js', content_type='application/javascript')),
+    
     re_path(r'^.*$', index),
 ]
 # Serve static files
