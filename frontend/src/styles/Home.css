@@ -1,0 +1,96 @@
+html, body{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+}
+.container{
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    background-image: url("/src/assets/Plane_52.jpg");
+    justify-content: space-between;
+    background-size: cover;
+    background-position: center;
+    flex-direction: column;
+    color: white;
+}
+.MainHead{
+    display: flex;
+    width: 100%;
+    margin-top: 2px;
+    height: 7vh;
+    justify-content: space-between;
+}
+.header-left{
+    margin: 2px 2px 2px 2px;
+    display: flex;
+    /* border-bottom-right-radius: 20px;
+    border-bottom-left-radius:10px; */
+    width: 7rem;
+    padding: 5px;
+    
+    /* background-color: rgba(1, 1, 1, 0.3);
+    color: white;
+    backdrop-filter: blur(10px); */
+}
+.header-left button{
+    background: rgba(0, 0, 0, 0.5);
+    background-color: transparent;
+}
+.pfp{
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    
+}
+.header-right{
+    display: flex;
+    /* background-color: rgba(1, 1, 1, 0.3);
+    backdrop-filter: blur(10px); */
+    /* position: absolute;
+    right: 1px; */
+    /* background-color: whitesmoke; */
+    padding: 5px;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    justify-self: end;
+    justify-content: flex-end;
+    width: 12rem;
+    height: 2.5rem;
+}
+.header-right button{
+    background-color: transparent;
+    color: greenyellow;
+    font-size: 1rem;
+    border: 2px solid greenyellow;
+    height: 2rem;
+    width: 5rem;
+    margin: 0 5%;
+    font-weight: bold;
+    border-radius: 5px;
+}
+.header-right button:hover{
+    transition: 0.2s;
+    background-color: black;
+    color: white;
+    box-shadow: 0 0 10px greenyellow, 0 0 20px greenyellow, 0 0 40px greenyellow;
+    transform: scale(1.05);
+}
+.header-right button:nth-child(2){
+    background-color: transparent;
+    color: whitesmoke;
+    border-color: whitesmoke;
+}
+.header-right button:nth-child(2):hover{
+    transition: 0.2s;
+    background-color: black;
+    box-shadow: 0 0 10px whitesmoke, 0 0 20px whitesmoke, 0 0 40px whitesmoke;
+    transform: scale(1.05);
+    color: whitesmoke;
+}
+.spotify{
+    width: 30%;
+    height: rem;
+}
+ 
