@@ -1,8 +1,6 @@
-# React + Vite
+# TimeTamer ⏳
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+TimeTamer is a Pomodoro website designed to help you stay focused and improve productivity. It tracks your average weekly performance, giving you insights into your work habits over time.
 
-Currently, two official plugins are available:
+Stay consistent. Stay productive. **Tame your time with TimeTamer!** 🚀
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
