@@ -22,7 +22,7 @@ function Home() {
             window.localStorage.getItem('authenticated')
             // typeof auth
         )
-        if (user) {
+        if (username) {
             getUser()
         }
         // if (window.localStorage.getItem('authenticated') == 'true') {
@@ -34,6 +34,15 @@ function Home() {
 
     const getUser = () => {
         console.log('get user data')
+        axios
+            .get('api/user/')
+            .then(({ data }) => {
+                console.log('get user resp: ', data)
+                sertUser(data)
+            })
+            .catch((err) => {
+                console.log('something went wrong', err)
+            })
     }
 
     const handleLogout = () => {
@@ -63,7 +72,12 @@ function Home() {
                 <div className="header-right">
                     {username &&
                     window.localStorage.getItem('authenticated') == 'true' ? (
-                        <button onClick={() => handleLogout()}>logout</button>
+                        <div>
+                            {user && <div>{`Hey! ${user.username}`}</div>}
+                            <button onClick={() => handleLogout()}>
+                                logout
+                            </button>
+                        </div>
                     ) : (
                         <>
                             <button onClick={() => navigate('/login')}>
@@ -76,11 +90,9 @@ function Home() {
                     )}
                 </div>
             </div>
-
             <div className="spotify">
                 <SpotifyFrame trackUri="7ouMYWpwJ422jRcDASZB7P" />
             </div>
-
             <div className="Maintimer">
                 <div className="Options">
                     <button className="child1">Focus</button>
@@ -89,7 +101,6 @@ function Home() {
                 </div>
                 <Timer />
             </div>
-
             <Menu />
         </div>
     )
