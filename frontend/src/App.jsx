@@ -3,16 +3,19 @@ import Home from './pages/Home'
 import Login from './components/Login'
 import SignIn from './components/Signin'
 import { ToastContainer } from 'react-toastify'
+import Settings from './components/Settings'
 
 function App() {
-    return (
+  return (
+      
         <Router>
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/:username" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signin" element={<SignIn />} />
-            </Routes>
+      </Routes>
+      <Settings />
             <ToastContainer
                 position="top-right"
                 theme="dark"
@@ -20,7 +23,8 @@ function App() {
                 closeOnClick={true}
                 hideProgressBar
             />
-        </Router>
+    </Router>
+    
     )
 }
 

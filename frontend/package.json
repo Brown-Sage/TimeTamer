@@ -17,6 +17,7 @@
     "react-icons": "^5.4.0",
     "react-live-clock": "^6.1.25",
     "react-router-dom": "^7.1.5",
+    "react-switch": "^7.1.0",
     "react-toastify": "^11.0.3"
   },
   "devDependencies": {

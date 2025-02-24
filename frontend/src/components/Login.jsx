@@ -44,7 +44,7 @@ export default function Login() {
     }
 
     return (
-        <div className="container">
+        <div>
             <div className="overlay">
                 <div className="popup">
                     <button
