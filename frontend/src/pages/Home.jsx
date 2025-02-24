@@ -94,11 +94,6 @@ function Home() {
                 <SpotifyFrame trackUri="7ouMYWpwJ422jRcDASZB7P" />
             </div>
             <div className="Maintimer">
-                <div className="Options">
-                    <button className="child1">Focus</button>
-                    <button className="child1">Break</button>
-                    <button className="child1">Long Break</button>
-                </div>
                 <Timer />
             </div>
             <Menu />
