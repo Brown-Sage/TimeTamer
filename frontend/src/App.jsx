@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home'
 import Login from './components/Login'
 import SignIn from './components/Signin'
@@ -14,8 +14,8 @@ function App() {
                 <Route path="/:username" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signin" element={<SignIn />} />
+                <Route path ="/settings" element={<Settings />} />
       </Routes>
-      <Settings />
             <ToastContainer
                 position="top-right"
                 theme="dark"

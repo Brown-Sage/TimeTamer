@@ -67,7 +67,7 @@ function Home() {
             
             <div className="MainHead">
                 <div className="header-left">
-                    <button>
+                    <button onClick={() => navigate("/settings")}>
                         <MdOutlineMenuOpen color="white" fontSize={30} />
                     </button>
                     

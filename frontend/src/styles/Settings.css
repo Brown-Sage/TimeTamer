@@ -1,25 +1,25 @@
 .setcontainer{
     position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* background: rgba(0, 0, 0, 0.5); */
-  box-shadow: 0 0 10px;
-  background-color:rgba(1, 1, 1, 0.3);
-  backdrop-filter: blur(10px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* background: rgba(0, 0, 0, 0.5); */
+   
+    background-color:rgba(1, 1, 1, 0.3);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .alphaheader{
     display: flex;
     flex-direction: column ;
     
-    border-radius: 10px;
+    border-radius: 20px;
     width: 40vw;
     height: 90vh;
-    background-color: white;
+    background-color: whitesmoke;
 
 }
 
@@ -33,25 +33,40 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    border-radius: 20px;
     border-bottom: 2px solid black;
     background-color: whitesmoke;
     align-items: center;
     padding: 10px;
 }
 .x {
-    margin-bottom: 10px;
-    align-self: flex-start ;
+    padding: 5px;
     font-size: 25px;
     cursor: pointer;
+    border: none;
 }
+.timeoptions{
+     border-bottom: 2px dashed black;
+}
+
 .timeoptions, .taskoptions{
     font-weight: bold;
-    font-size: 26px;
-    padding: 10px;
+    font-size: 20px;
+    
+    
+    /* padding: 10px; */
+    
     display: flex;
     flex-direction: column;
-}
-.timeoptions span, .taskoptions span{
     
-    padding: 20px;
+}
+.timeoptions div, .taskoptions div{
+    display: flex;
+    padding: 10px 20px;
+    margin-top: 20px;
+    justify-content: space-between;
+    align-items: center;
+}
+.switch-container {
+    margin-left: auto; 
 }

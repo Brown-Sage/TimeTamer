@@ -1,20 +1,22 @@
 import "../styles/Settings.css";
 import React, { useState } from "react";
-import Switch from "react-switch";
-
+import { Switch } from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
+import { useNavigate } from "react-router-dom";
 export default function Settings() {
+    const navigate = useNavigate();
     const [switches, setSwitches] = useState({
-        autoStartBreaks: false,
+        autoStartBreaks: true,
         autoStartPomodoros: false,
         longBreakInterval: false,
         autoCheckTasks: false,
         autoSwitchTasks: false
     });
 
-    const handleChange = (key) => {
+    const handleChange = (key) => (event) => {
         setSwitches(prev => ({
             ...prev,
-            [key]: !prev[key]
+            [key]: event.target.checked
         }));
     };
 
@@ -23,79 +25,63 @@ export default function Settings() {
             <div className="alphaheader">
                 <div className="bar">
                     <span className="setting"> SETTING </span>
-                    <span className="x"> x </span>
+                    <button onClick={() => navigate("/static")} className="x"> <CloseIcon /> </button>
                 </div>
                 
                 <div className="timeoptions">
                     <div>
                         <span>Auto Start Breaks</span>
-                        <span>
+                        <div className="switch-container">
                             <Switch 
-                                onChange={() => handleChange('autoStartBreaks')}
                                 checked={switches.autoStartBreaks}
-                                uncheckedIcon={false}
-                                checkedIcon={false}
-                                onColor="#86d3ff"
-                                offColor="#888888"
+                                onChange={handleChange('autoStartBreaks')}
+                                color="primary"
                             />
-                        </span>
+                        </div>
                     </div>
                     
                     <div>
                         <span>Auto Start Pomodoros</span>
-                        <span>
+                        <div className="switch-container">
                             <Switch 
-                                onChange={() => handleChange('autoStartPomodoros')}
                                 checked={switches.autoStartPomodoros}
-                                uncheckedIcon={false}
-                                checkedIcon={false}
-                                onColor="#86d3ff"
-                                offColor="#888888"
+                                onChange={handleChange('autoStartPomodoros')}
+                                color="primary"
                             />
-                        </span>
+                        </div>
                     </div>
                     
                     <div>
                         <span>Long break interval</span>
-                        <span>
+                        <div className="switch-container">
                             <Switch 
-                                onChange={() => handleChange('longBreakInterval')}
                                 checked={switches.longBreakInterval}
-                                uncheckedIcon={false}
-                                checkedIcon={false}
-                                onColor="#86d3ff"
-                                offColor="#888888"
+                                onChange={handleChange('longBreakInterval')}
+                                color="primary"
                             />
-                        </span>
+                        </div>
                     </div>
                 </div>
                 <div className="taskoptions">
                     <div>
                         <span>Auto Check Tasks</span>
-                        <span>
+                        <div className="switch-container">
                             <Switch 
-                                onChange={() => handleChange('autoCheckTasks')}
                                 checked={switches.autoCheckTasks}
-                                uncheckedIcon={false}
-                                checkedIcon={false}
-                                onColor="#86d3ff"
-                                offColor="#888888"
+                                onChange={handleChange('autoCheckTasks')}
+                                color="primary"
                             />
-                        </span>
+                        </div>
                     </div>
-                    
                     <div>
                         <span>Auto Switch Tasks</span>
-                        <span>
+                        <div className="switch-container">
                             <Switch 
-                                onChange={() => handleChange('autoSwitchTasks')}
                                 checked={switches.autoSwitchTasks}
-                                uncheckedIcon={false}
-                                checkedIcon={false}
-                                onColor="#86d3ff"
-                                offColor="#888888"
+                                onChange={handleChange('autoSwitchTasks')}
+                                color="primary"
                             />
-                        </span>
+                        </div>
                     </div>
                 </div>
             </div>
