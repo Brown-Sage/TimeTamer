@@ -4,6 +4,7 @@ import Login from './components/Login'
 import SignIn from './components/Signin'
 import { ToastContainer } from 'react-toastify'
 import Settings from './components/Settings'
+import Stats from './components/Stats'
 
 function App() {
   return (
@@ -14,7 +15,9 @@ function App() {
                 <Route path="/:username" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signin" element={<SignIn />} />
-                <Route path ="/settings" element={<Settings />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/stats" element={<Stats />} />
+        
       </Routes>
             <ToastContainer
                 position="top-right"

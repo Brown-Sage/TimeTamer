@@ -18,6 +18,8 @@
 
 .bottom button {
   background-color: transparent;
+  outline: none;
+  color: white;
 }
 
 .stats {
