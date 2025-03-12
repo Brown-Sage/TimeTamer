@@ -51,11 +51,30 @@
     font-weight: bolder;
     
 }
-#timer{
+.child1.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: white;
+}
+#timer {
     font-size: 5.7rem;
     font-weight: bolder;
-    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
+
+#timer span {
+    cursor: pointer;
+    min-width: 1.8ch;
+    display: inline-block;
+    text-align: center;
+}
+
+#timer span:hover {
+    opacity: 0.8;
+}
+
 #startStopBtn{
     /* margin-top: 30px;
     font-size: 2rem;
@@ -124,4 +143,35 @@
 }
 #session-count{
   font-size: medium;
+}
+
+.timer-input {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid white;
+    color: white;
+    font-size: 5.7rem;
+    width: 2.2ch;
+    text-align: center;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    font-family: inherit;
+    font-weight: bolder;
+}
+
+.timer-input:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+
+.timer-input::-webkit-inner-spin-button,
+.timer-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* For Firefox */
+.timer-input[type=number] {
+    -moz-appearance: textfield;
 }
