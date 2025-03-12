@@ -1,0 +1,74 @@
+.time-progress-container {
+    position: absolute;
+    top: 90px;
+    left: 0px;
+    border-radius: 12px;
+    padding: 12px;
+    width: 8.5rem;
+    margin: 0px;
+}
+
+.time-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    color: white;
+}
+
+.current-time {
+    font-size: 2.8rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+    line-height: 1;
+}
+
+/* Style for AM/PM */
+.current-time::after {
+    content: attr(data-period);
+    font-size: 0.8rem;
+    position: absolute;
+    right: -25px;
+    top: 8px;
+    opacity: 0.8;
+}
+
+.current-date {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-bottom: 8px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.time-left {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 12px;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    transition: width 1s linear;
+    border-radius: 2px;
+    animation: glow 2s infinite;
+}
+
+/* Optional animation for progress bar */
+@keyframes glow {
+    0% { box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); }
+    50% { box-shadow: 0 0 15px rgba(76, 175, 80, 0.8); }
+    100% { box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); }
+}

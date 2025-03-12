@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import axios from 'axios'
 import Settings from '../components/Settings'
+import TimeProgress from '../components/TimeProgress';
 
 function Home() {
     const navigate = useNavigate()
@@ -99,6 +100,7 @@ function Home() {
             <div className="Maintimer">
                 <Timer />
             </div>
+            <TimeProgress />
             <Menu />
         </div>
     )
