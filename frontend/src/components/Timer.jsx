@@ -27,10 +27,6 @@ function Timer() {
         alarm: localStorage.getItem('timerAlarm') === 'true'
     });
 
-    const updateData = () => {              // Gotta remove this one cuz no longer needed
-        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    };
-
     const startStop = () => {
         setIsRunning((prev) => !prev);
     };
@@ -127,7 +123,7 @@ function Timer() {
     useEffect(() => {
         let interval;
         if (isRunning) {
-            interval = setInterval(() => {
+            interval = setInterval(() => {        // Timer does not update after 1st session it stays 00, gotta fix that
                 setSeconds((prevSeconds) => {
                     if (prevSeconds === 0) {
                         if (minutes === 0) {
@@ -135,23 +131,21 @@ function Timer() {
                                 clearInterval(interval);
                                 setIsRunning(false);
                                 if(mode === 'focus'){
-                                    setFocusCount(prev => {
-                                        const newCount = prev+1;
-                                        if (newCount % 4 === 0){
-                                            if(settings.alarm) playaudio();
-                                            handleLongBreak();
-                                        }
-                                        else{
-                                            if(settings.alarm) playaudio();
-                                            handleBreak();
-                                        }
-                                        return newCount;
-                                    })
-                                }
-                                    else if(mode === 'break' || mode == 'longbreak'){
-                                        handleFocus();
+                                    // Only increment focus count when focus session completes
+                                    if(settings.alarm) playaudio();
+                                    const nextCount = focusCount + 1;
+                                    setFocusCount(nextCount);
+                                    
+                                    // Ditermine next break type based on new count
+                                    if (nextCount % 4 === 0) {
+                                        handleLongBreak();
+                                    } else {
+                                        handleBreak();
                                     }
-                                
+                                } else if(mode === 'break' || mode === 'longbreak'){
+                                    if(settings.alarm) playaudio();
+                                    handleFocus();
+                                }
                                 return 0;
                             } else {
                                 setHours((prevHours) => prevHours - 1);
@@ -170,7 +164,7 @@ function Timer() {
             clearInterval(interval);
         }
         return () => clearInterval(interval);
-    }, [isRunning, minutes, seconds, hours]);
+    }, [isRunning, minutes, seconds, hours, mode, focusCount, settings.alarm]);
 
     const toggleSettings = () => {
         setShowSettings(!showSettings);
@@ -293,7 +287,7 @@ function Timer() {
                     </span>
                 )}
             </div>
-            <div id="session-count">Session: {Math.floor((focusCount % 4) + 1)}</div>
+            <div id="session-count">Session: {focusCount}</div>
             <button id="startStopBtn" onClick={startStop}>
                 {isRunning ? "Stop" : "Start"}
             </button>
