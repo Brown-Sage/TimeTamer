@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { IoClose } from "react-icons/io5";
 import { IoSettingsSharp } from "react-icons/io5";
 import "../styles/Timer.css";
+import alarmsound from "../assets/mixkit-clear-announce-tones-2861.wav";
+import { AlarmSharp } from "@mui/icons-material";
 
 function Timer() {
     const [timerSettings, setTimerSettings] = useState({
@@ -25,7 +27,7 @@ function Timer() {
         alarm: localStorage.getItem('timerAlarm') === 'true'
     });
 
-    const updateData = () => {
+    const updateData = () => {              // Gotta remove this one cuz no longer needed
         return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     };
 
@@ -36,7 +38,7 @@ function Timer() {
     const handleTimeClick = (field) => {
         if (!isRunning) {
             setEditingField(field);
-            setEditValue(field === 'hours' ? hours.toString() : minutes.toString());
+            setEditValue(field === 'hours' ? hours.toString() : field === 'minutes' ? minutes.toString():seconds.toString());
             setTimeout(() => {
                 inputRef.current?.focus();
             }, 0);
@@ -65,7 +67,7 @@ function Timer() {
         if (editingField === 'hours') {
             const newHours = Math.min(Math.max(value, 0), 99);
             setHours(newHours);
-        } else {
+        } else if(editingField === 'minutes') {
             const newMinutes = Math.min(Math.max(value, 0), 59);
             setTimerSettings(prev => ({
                 ...prev,
@@ -76,6 +78,10 @@ function Timer() {
                 ...timerSettings,
                 [mode]: { ...timerSettings[mode], minutes: newMinutes }
             }));
+        }
+        else if (editingField === 'seconds') {
+            const newSeconds = Math.min(Math.max(value, 0), 59);
+            setSeconds(newSeconds);
         }
         setEditingField(null);
     };
@@ -110,6 +116,13 @@ function Timer() {
         setMinutes(timerSettings.longbreak.minutes);
         setSeconds(0);
     };
+    const playaudio = () =>{
+        const audio = new Audio(alarmsound)
+        audio.play().catch((error) => {
+        console.error('Failed to play audio:', error);
+    });
+};
+    
 
     useEffect(() => {
         let interval;
@@ -125,18 +138,20 @@ function Timer() {
                                     setFocusCount(prev => {
                                         const newCount = prev+1;
                                         if (newCount % 4 === 0){
+                                            if(settings.alarm) playaudio();
                                             handleLongBreak();
                                         }
                                         else{
+                                            if(settings.alarm) playaudio();
                                             handleBreak();
                                         }
                                         return newCount;
                                     })
                                 }
-                                    else if(mode === 'break' || mode == 'longbreak'){{
+                                    else if(mode === 'break' || mode == 'longbreak'){
                                         handleFocus();
                                     }
-                                }
+                                
                                 return 0;
                             } else {
                                 setHours((prevHours) => prevHours - 1);
@@ -259,7 +274,24 @@ function Timer() {
                         {String(minutes).padStart(2, '0')}
                     </span>
                 )}
-                :{String(seconds).padStart(2, '0')}
+                :
+                {editingField === 'seconds' ? (
+                <input
+                        ref={inputRef}
+                        type="number"
+                        value={editValue}
+                        onChange={handleTimeChange}
+                        onKeyDown={handleInputKeyDown}
+                        onBlur={saveNewTime}
+                        className="timer-input"
+                        min="0"
+                        max="99"
+                    />
+                ) : (
+                    <span onClick={() => handleTimeClick('seconds')}>
+                        {String(seconds).padStart(2, '0')}
+                    </span>
+                )}
             </div>
             <div id="session-count">Session: {Math.floor((focusCount % 4) + 1)}</div>
             <button id="startStopBtn" onClick={startStop}>

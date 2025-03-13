@@ -4,6 +4,7 @@ import { RiGeminiFill } from "react-icons/ri";
 import { MdWallpaper } from "react-icons/md";
 import "../styles/Menu.css"
 import { useNavigate } from "react-router-dom";
+import playaudio from "./Timer";
 
 export default function Menu() {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ export default function Menu() {
         <MdQueryStats />
         <p>Track</p>
       </div>
-      <div className="stats">
+      <div onClick= {playaudio} className="stats">
         <RiGeminiFill />
         <p>AI</p>
       </div>
