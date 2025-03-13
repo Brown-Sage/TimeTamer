@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { IoClose } from "react-icons/io5";
+import { IoSettingsSharp } from "react-icons/io5";
 import "../styles/Timer.css";
 
 function Timer() {
@@ -17,6 +19,11 @@ function Timer() {
     const inputRef = useRef(null);
     const [editingField, setEditingField] = useState(null); // 'hours' or 'minutes'
     const [editValue, setEditValue] = useState("");
+    const [showSettings, setShowSettings] = useState(false);
+    const [settings, setSettings] = useState({
+        notifications: localStorage.getItem('timerNotifications') === 'true',
+        alarm: localStorage.getItem('timerAlarm') === 'true'
+    });
 
     const updateData = () => {
         return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
@@ -150,8 +157,61 @@ function Timer() {
         return () => clearInterval(interval);
     }, [isRunning, minutes, seconds, hours]);
 
+    const toggleSettings = () => {
+        setShowSettings(!showSettings);
+    };
+
+    const handleSettingChange = (setting) => {
+        setSettings(prev => {
+            const newSettings = {
+                ...prev,
+                [setting]: !prev[setting]
+            };
+            localStorage.setItem(`timer${setting.charAt(0).toUpperCase() + setting.slice(1)}`, newSettings[setting]);
+            return newSettings;
+        });
+    };
+
+    const closeTimer = () => {
+        // Add any cleanup logic here
+        setIsRunning(false);
+        document.querySelector('.Maintimer').style.display = 'none';
+    };
+
     return (
-        <>
+        <div className="timer-container">
+            <div className="timer-header">
+                <button className="timer-control-btn" onClick={toggleSettings}>
+                    <IoSettingsSharp size={18} />
+                </button>
+                <button className="timer-control-btn" onClick={closeTimer}>
+                    <IoClose size={18} />
+                </button>
+            </div>
+
+            {showSettings && (
+                <div className="timer-settings-menu">
+                    <div className="settings-option">
+                        <input
+                            type="checkbox"
+                            id="notifications"
+                            checked={settings.notifications}
+                            onChange={() => handleSettingChange('notifications')}
+                        />
+                        <label htmlFor="notifications">Enable notifications</label>
+                    </div>
+                    <div className="settings-option">
+                        <input
+                            type="checkbox"
+                            id="alarm"
+                            checked={settings.alarm}
+                            onChange={() => handleSettingChange('alarm')}
+                        />
+                        <label htmlFor="alarm">Enable alarm sound</label>
+                    </div>
+                </div>
+            )}
+
             <div className="Options">
                 <button onClick={handleFocus} className={`child1 ${mode === 'focus' ? 'active' : ''}`}>
                     Focus
@@ -205,7 +265,7 @@ function Timer() {
             <button id="startStopBtn" onClick={startStop}>
                 {isRunning ? "Stop" : "Start"}
             </button>
-        </>
+        </div>
     );
 }
 

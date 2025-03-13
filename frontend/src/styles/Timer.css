@@ -8,8 +8,8 @@
     display: flex;
     justify-content: space-around;
     align-items: center;
-    width: 400px;
-    height: 19rem;
+    width: 450px;
+    height: 21rem;
     background-color: rgba(1, 0, 10, 0.4);
     backdrop-filter: blur(5px);
     font-size: 4rem;
@@ -86,52 +86,25 @@
 }
 
 #startStopBtn{
-    /* margin-top: 30px;
-    font-size: 2rem;
+    align-items: center;
     background-color: whitesmoke;
-    border: none;
-    width: 30%;;
-    border-radius: 5px;
-
-
-/* CSS */
-/* #startStopBtn { */ 
-  align-items: center;
-  background-color: whitesmoke;
-  border: 2px solid #111;
-  border-radius: 8px;
-  
-  color: #111;
-  cursor: pointer;
-  display: flex;
-  font-family: Inter,sans-serif;
-  font-size: 16px;
-  height: 40px;
-  justify-content: center;
-  line-height: 24px;
-  max-width: 100%;
-  padding: 0 25px;
-  position: relative;
-  text-align: center;
-  text-decoration: none;
-  
-  
+    border: 2px solid #111;
+    border-radius: 8px;
+    color: #111;
+    cursor: pointer;
+    display: flex;
+    font-family: Inter,sans-serif;
+    font-size: 16px;
+    height: 40px;
+    justify-content: center;
+    line-height: 24px;
+    padding: 0 25px;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+    margin: 0 auto; /* Center the button */
+    min-width: 120px; /* Give it a minimum width */
 }
-
-/* #startStopBtn:after {
-  background-color: #111;
-  border-radius: 8px;
-  content: "";
-  display: block;
-  height: 48px;
-  left: 0;
-  width: 100%;
-  position: absolute;
-  top: -2px;
-  transform: translate(8px, 8px);
-  transition: transform .2s ease-out;
-  z-index: -1;
-} */
 
 #startStopBtn:hover:after {
   transform: translate(0, 0);
@@ -153,6 +126,9 @@
 }
 #session-count{
   font-size: medium;
+  text-align: center;
+  color: white;
+  margin: 10px 0;
 }
 
 .timer-input {
@@ -184,4 +160,97 @@
 /* For Firefox */
 .timer-input[type=number] {
     -moz-appearance: textfield;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    /* Add outline */
+    outline: 1px solid rgba(255, 255, 255, 0.3);
+    outline-offset: 1px;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    transition: width 1s linear;
+    border-radius: 2px;
+    /* Add inner outline */
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+}
+
+.timer-header {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between; /* Space between settings and close button */
+    padding: 0 15px;
+}
+
+.timer-controls {
+    display: flex;
+    width: 100%;
+    justify-content: space-between; /* Space between controls */
+    align-items: center;
+}
+
+.timer-control-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 4px;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+}
+
+.timer-control-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.timer-settings-menu {
+    position: absolute;
+    top: 45px;
+    left: 15px; /* Move settings menu to left */
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    min-width: 180px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    margin: 8px 0;
+    font-size: 0.85rem;
+}
+
+.settings-option input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+}
+
+.settings-option label {
+    cursor: pointer;
+    opacity: 0.9;
+    font-weight: 400;
+    user-select: none;
+}
+
+.settings-option:hover label {
+    opacity: 1;
 }
