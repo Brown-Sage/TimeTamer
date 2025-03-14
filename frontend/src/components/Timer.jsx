@@ -115,9 +115,9 @@ function Timer() {
     const playaudio = () =>{
         const audio = new Audio(alarmsound)
         audio.play().catch((error) => {
-        console.error('Failed to play audio:', error);
-    });
-};
+            console.error('Failed to play audio:', error);
+        });
+    };
     
 
     useEffect(() => {
@@ -182,8 +182,7 @@ function Timer() {
     };
 
     const closeTimer = () => {
-        // Add any cleanup logic here
-        setIsRunning(false);
+        
         document.querySelector('.Maintimer').style.display = 'none';
     };
 
@@ -293,6 +292,9 @@ function Timer() {
             </button>
         </div>
     );
+}
+export const openTimer = () =>{
+    document.querySelector('.Maintimer').style.display = 'flex';
 }
 
 export default Timer;

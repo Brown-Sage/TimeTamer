@@ -2,9 +2,10 @@ import { MdQueryStats } from "react-icons/md";
 import { LuListTodo } from "react-icons/lu";
 import { RiGeminiFill } from "react-icons/ri";
 import { MdWallpaper } from "react-icons/md";
+import { CiClock1 } from "react-icons/ci";
 import "../styles/Menu.css"
 import { useNavigate } from "react-router-dom";
-import playaudio from "./Timer";
+import  { openTimer } from "./Timer";
 
 export default function Menu() {
   const navigate = useNavigate();
@@ -18,7 +19,12 @@ export default function Menu() {
         <MdQueryStats />
         <p>Track</p>
       </div>
-      <div onClick= {playaudio} className="stats">
+      <div onClick={openTimer} className="stats">
+        <CiClock1  />
+        <p>Pomo</p>
+      </div>
+
+      <div className="stats">
         <RiGeminiFill />
         <p>AI</p>
       </div>
