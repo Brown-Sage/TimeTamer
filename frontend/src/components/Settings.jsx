@@ -1,5 +1,5 @@
 import "../styles/Settings.css";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Switch } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate } from "react-router-dom";

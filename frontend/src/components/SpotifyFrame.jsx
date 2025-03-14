@@ -1,4 +1,3 @@
-import React from "react";
 import "../styles/SpotifyFrame.css";
 const SpotifyFrame = ({ trackUri }) => {
 
