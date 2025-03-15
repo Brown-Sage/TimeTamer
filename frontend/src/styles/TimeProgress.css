@@ -24,7 +24,7 @@
   }
   
   .current-time {
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-weight: 500;
     letter-spacing: -1px;
     color: rgb(188, 178, 178);
@@ -38,8 +38,7 @@
   }
   
   .current-date {
-    font-size: 1.2rem;
-    margin-top: 5px;
+    font-size: 0.9rem;
     text-transform: none;
     letter-spacing: 0.9px;
     font-weight: 400;
@@ -47,13 +46,13 @@
   }
   
   .progress-bar-container {
-    width: 100%;
+    width: 97%;
     height: 8px;
     border: 1px solid white;
     background-color: transparent;
     border-radius: 1px;
     overflow: hidden;
-    margin-top: 4px;
+    margin-right: 1px;
   }
   
   .progress-bar {
