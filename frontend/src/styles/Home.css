@@ -23,28 +23,6 @@ html, body{
     justify-content: space-between;
 }
 .header-left{
-    margin: 2px 2px 2px 2px;
-    display: flex;
-    /* border-bottom-right-radius: 20px;
-    border-bottom-left-radius:10px; */
-    width: 7rem;
-    padding: 5px;
-    
-    /* background-color: rgba(1, 1, 1, 0.3);
-    color: white;
-    backdrop-filter: blur(10px); */
-}
-.header-left button{
-    background: rgba(0, 0, 0, 0.5);
-    background-color: transparent;
-}
-.pfp{
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    
-}
-.header-right{
     display: flex;
     /* background-color: rgba(1, 1, 1, 0.3);
     backdrop-filter: blur(10px); */
@@ -59,7 +37,18 @@ html, body{
     width: 12rem;
     height: 2.5rem;
 }
-.header-right button{
+.header-left button{
+    background: rgba(0, 0, 0, 0.5);
+    background-color: transparent;
+}
+.pfp{
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    
+}
+
+.header-left button{
     background-color: transparent;
     color: greenyellow;
     font-size: 1rem;
@@ -70,19 +59,19 @@ html, body{
     font-weight: bold;
     border-radius: 5px;
 }
-.header-right button:hover{
+.header-left button:hover{
     transition: 0.2s;
     background-color: black;
     color: white;
     box-shadow: 0 0 10px greenyellow, 0 0 20px greenyellow, 0 0 40px greenyellow;
     transform: scale(1.05);
 }
-.header-right button:nth-child(2){
+.header-left button:nth-child(2){
     background-color: transparent;
     color: whitesmoke;
     border-color: whitesmoke;
 }
-.header-right button:nth-child(2):hover{
+.header-left button:nth-child(2):hover{
     transition: 0.2s;
     background-color: black;
     box-shadow: 0 0 10px whitesmoke, 0 0 20px whitesmoke, 0 0 40px whitesmoke;

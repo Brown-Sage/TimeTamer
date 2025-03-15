@@ -11,6 +11,8 @@ import { toast } from 'react-toastify'
 import axios from 'axios'
 import Settings from '../components/Settings'
 import TimeProgress from '../components/TimeProgress';
+import Lottie from 'lottie-react'
+import SmallAnimations from '../components/SmallAnimations';
 
 function Home() {
     const navigate = useNavigate()
@@ -68,12 +70,10 @@ function Home() {
             
             <div className="MainHead">
                 <div className="header-left">
-                    <button onClick={() => navigate("/settings")}>
+                    {/* <button onClick={() => navigate("/settings")}>
                         <MdOutlineMenuOpen color="white" fontSize={30} />
-                    </button>
-                    
-                </div>
-                <div className="header-right">
+                    </button> */}
+
                     {username &&
                     window.localStorage.getItem('authenticated') == 'true' ? (
                         <div>
@@ -90,8 +90,14 @@ function Home() {
                             <button onClick={() => navigate('/signin')}>
                                 Sign Up
                             </button>
+
+                            
                         </>
                     )}
+                    
+                </div>
+                <div className="header-right">
+                    
                 </div>
             </div>
             <div className="spotify">
@@ -102,6 +108,7 @@ function Home() {
             </div>
             <TimeProgress />
             <Menu />
+            <SmallAnimations />
         </div>
     )
 }

@@ -35,6 +35,7 @@
     font-size: 1rem;
     margin-left: 4px;
     color: rgba(255, 255, 255, 0.7);
+    align-items: flex-start;
   }
   
   .current-date {
