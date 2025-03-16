@@ -8,13 +8,16 @@
 }
 
 .cash, .streak  {
-    width: 40px;
+    display: flex;
+    font-size: 12px;
+    width: 60px;
     height: 40px;
     cursor: pointer;
     transition: transform 0.2s ease;
 }
 .idea{
-    width: 25px;
+    display: flex;
+    width: 30px;
     height: 40px;
     cursor: pointer;
     transition: transform 0.2s ease;

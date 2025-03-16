@@ -10,7 +10,12 @@ import { useNavigate } from "react-router-dom";
 const Container = styled("div")({
   backgroundColor: "#1a1a1a",
   padding: "20px",
-  minHeight: "100vh",
+  borderRadius: "32px",
+  alignContent: "center",
+  justifyContent: "center",
+  alignSelf: "center",
+  width: "70vw",
+  minHeight: "70vh",
   color: "#fff",
   fontFamily: "Arial, sans-serif",
 });
