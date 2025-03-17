@@ -13,6 +13,8 @@ import Settings from '../components/Settings'
 import TimeProgress from '../components/TimeProgress';
 import Lottie from 'lottie-react'
 import SmallAnimations from '../components/SmallAnimations';
+import Goal from '../components/Goal'
+import '../styles/Goal.css'
 
 function Home() {
     const navigate = useNavigate()
@@ -99,6 +101,9 @@ function Home() {
                 <div className="header-right">
                     
                 </div>
+            </div>
+            <div className="mid">
+                <Goal/>
             </div>
             <div className="spotify">
                 <SpotifyFrame trackUri="7ouMYWpwJ422jRcDASZB7P" />
