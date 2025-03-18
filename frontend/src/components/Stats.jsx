@@ -5,7 +5,13 @@ import LinearProgress from "@mui/material/LinearProgress";
 import IconButton from "@mui/material/IconButton";
 import CloudOffIcon from "@mui/icons-material/CloudOff";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { useNavigate } from "react-router-dom"; 
+import Lottie from "lottie-react";
+import streakAnimation from "../assets/animations/streak.json";
+import smileAnimation from "../assets/animations/smile.json";
+import rocketAnimation from "../assets/animations/rocket.json";
+import starAnimation from "../assets/animations/star.json";
+import runnerAnimation from "../assets/animations/runner.json";
+import plantAnimation from "../assets/animations/plant.json";
 
 const Container = styled("div")({
   backgroundColor: "rgba(26, 26, 26, 0.95)",
@@ -109,8 +115,17 @@ const TimeItem = styled("div")({
   },
 });
 
+const LottieWrapper = styled('div')({
+  width: "40px",
+  height: "40px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  marginLeft: "-4px",
+  marginTop: "-4px"
+});
+
 function Stats() {
-  const navigate = useNavigate();
   const currentStreak = 4;
   const bestRecord = 10;
   const productiveDays = 37;
@@ -152,14 +167,26 @@ function Stats() {
   return (
     <Container>
       <Header>
-        <Typography variant="h4" style={{ 
+        <Typography variant="h3" style={{ 
           color: "#ff4d4d",
           fontWeight: "600",
           display: "flex",
           alignItems: "center",
           gap: "8px"
         }}>
-          Streak <span role="img" aria-label="fire">🔥</span>
+          Streak 
+          <LottieWrapper>
+            <Lottie
+              animationData={streakAnimation}
+              loop={true}
+              autoplay={true}
+              style={{ 
+                transform: "scale(2.5)",
+                width: "100%", 
+                height: "100%",
+              }}
+            />
+          </LottieWrapper>
         </Typography>
         <div style={{ display: "flex", gap: "8px" }}>
           <IconButton 
@@ -184,24 +211,66 @@ function Stats() {
 
       <StatsGrid>
         <StatCard>
-          <Typography variant="h6" style={{ color: "#4CAF50", marginBottom: "16px" }}>
-            Current Streak 😊
+          <Typography variant="h6" style={{ 
+            color: "#4CAF50", 
+            marginBottom: "16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+          }}>
+            Current Streak
+            <LottieWrapper>
+              <Lottie
+                animationData={smileAnimation}
+                loop={true}
+                autoplay={true}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </LottieWrapper>
           </Typography>
           <Typography variant="h3" style={{ fontWeight: "600" }}>
             {currentStreak}
           </Typography>
         </StatCard>
         <StatCard>
-          <Typography variant="h6" style={{ color: "#2196F3", marginBottom: "16px" }}>
-            Best Record 🚀
+          <Typography variant="h6" style={{ 
+            color: "#2196F3", 
+            marginBottom: "16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+          }}>
+            Best Record
+            <LottieWrapper>
+              <Lottie
+                animationData={rocketAnimation}
+                loop={true}
+                autoplay={true}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </LottieWrapper>
           </Typography>
           <Typography variant="h3" style={{ fontWeight: "600" }}>
             {bestRecord}
           </Typography>
         </StatCard>
         <StatCard>
-          <Typography variant="h6" style={{ color: "#FFC107", marginBottom: "16px" }}>
-            Productive Days 🌟
+          <Typography variant="h6" style={{ 
+            color: "#FFC107", 
+            marginBottom: "16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+          }}>
+            Productive Days
+            <LottieWrapper>
+              <Lottie
+                animationData={starAnimation}
+                loop={true}
+                autoplay={true}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </LottieWrapper>
           </Typography>
           <Typography variant="h3" style={{ fontWeight: "600" }}>
             {productiveDays}
@@ -217,7 +286,15 @@ function Stats() {
           alignItems: "center",
           gap: "8px"
         }}>
-          Your Day 🏃‍♂️
+          Your Day
+          <LottieWrapper>
+            <Lottie
+              animationData={runnerAnimation}
+              loop={true}
+              autoplay={true}
+              style={{ width: "100%", height: "100%" }}
+            />
+          </LottieWrapper>
         </Typography>
         <Typography variant="body2" style={{ 
           color: "rgba(255, 255, 255, 0.7)",
@@ -239,8 +316,21 @@ function Stats() {
         </Typography>
 
         <div>
-          <Typography variant="h6" style={{ marginBottom: "16px" }}>
-            Day Progress 🌱
+          <Typography variant="h6" style={{ 
+            marginBottom: "16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+          }}>
+            Day Progress
+            <LottieWrapper style={{ width: "32px", height: "32px" }}>
+              <Lottie
+                animationData={plantAnimation}
+                loop={true}
+                autoplay={true}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </LottieWrapper>
           </Typography>
           <ProgressBarContainer>
             <Typography className="progress-label">
