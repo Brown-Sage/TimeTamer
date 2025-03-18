@@ -9,6 +9,7 @@ function Goal() {
   const [todayStats, setTodayStats] = useState({ completed: 0, total: 0 });
   const [isExpanded, setIsExpanded] = useState(false);
   const [taskDuration, setTaskDuration] = useState('');
+  const [taskPriority, setTaskPriority] = useState('medium');
   const [, setTimerUpdate] = useState(0);
 
   // Load tasks and calculate today's stats
@@ -74,13 +75,15 @@ function Goal() {
       id: Date.now(), 
       text: newTask, 
       completed: false,
-      duration: parseInt(taskDuration) || 0, // Duration in minutes
+      duration: parseInt(taskDuration) || 0,
       startTime: null,
-      isRunning: false
+      isRunning: false,
+      priority: taskPriority
     };
     setTasks((prevTasks) => [...prevTasks, newTaskObject]);
     setNewTask(''); // Clear input field
     setTaskDuration(''); // Clear duration input
+    setTaskPriority('medium'); // Reset priority to default
   };
 
   // Toggle task completion status
@@ -140,6 +143,15 @@ function Goal() {
     return getRemainingTime(task) <= 0;
   };
 
+  // Sort tasks by priority
+  const getSortedTasks = () => {
+    const priorityOrder = { high: 0, medium: 1, low: 2 };
+    return [...tasks].sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      return priorityOrder[a.priority] - priorityOrder[b.priority];
+    });
+  };
+
   return (
     <div className={`task-manager ${isExpanded ? 'expanded' : ''}`} 
          onClick={() => setIsExpanded(true)}>
@@ -166,16 +178,25 @@ function Goal() {
                     type="number"
                     value={taskDuration}
                     onChange={(e) => setTaskDuration(e.target.value)}
-                    placeholder="Duration (min)"
+                    placeholder="Minutes"
                     min="1"
                     className="duration-input"
                 />
+                <select 
+                    value={taskPriority}
+                    onChange={(e) => setTaskPriority(e.target.value)}
+                    className="priority-select"
+                >
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
                 <button onClick={addTask}><IoMdAdd /></button>
             </div>
 
             <ul className="task-list">
-                {tasks.map((task, index) => (
-                    <li key={index} className={task.completed ? 'completed' : ''}>
+                {getSortedTasks().map((task, index) => (
+                    <li key={index} className={`${task.completed ? 'completed' : ''} priority-${task.priority}`}>
                         <div className="task-content">
                             <input 
                                 type="checkbox"
@@ -184,7 +205,12 @@ function Goal() {
                                 onChange={() => toggleTaskCompletion(task.id)}
                             />
                             <div className="task-details">
-                                <span className="task-text">{task.text}</span>
+                                <div className="task-header-row">
+                                    <span className="task-text">{task.text}</span>
+                                    <span className={`priority-badge ${task.priority}`}>
+                                        {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                                    </span>
+                                </div>
                                 <div className="task-timer">
                                     <span className="task-duration">
                                         {task.duration} min
