@@ -53,40 +53,59 @@ const DayProgressCard = styled(Card)({
   padding: "24px",
   borderRadius: "16px",
   border: "1px solid rgba(255, 255, 255, 0.1)",
+  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
 });
 
 const ProgressBarContainer = styled("div")({
   margin: "24px 0",
+  position: "relative",
   "& .MuiLinearProgress-root": {
-    height: "12px",
-    borderRadius: "6px",
+    height: "16px",
+    borderRadius: "8px",
     backgroundColor: "rgba(255, 255, 255, 0.1)",
     "& .MuiLinearProgress-bar": {
-      borderRadius: "6px",
+      borderRadius: "8px",
+      background: "linear-gradient(90deg, #4CAF50, #8BC34A)",
     },
+  },
+  "& .progress-label": {
+    position: "absolute",
+    top: "-24px",
+    right: "0",
+    fontSize: "0.875rem",
+    color: "rgba(255, 255, 255, 0.7)",
   },
 });
 
 const TimeContainer = styled("div")({
   display: "grid",
   gridTemplateColumns: "repeat(2, 1fr)",
-  gap: "16px",
-  marginTop: "24px",
-  padding: "16px",
+  gap: "20px",
+  marginTop: "32px",
+  padding: "20px",
   backgroundColor: "rgba(0, 0, 0, 0.2)",
   borderRadius: "12px",
+  border: "1px solid rgba(255, 255, 255, 0.05)",
 });
 
 const TimeItem = styled("div")({
   textAlign: "center",
+  padding: "12px",
+  backgroundColor: "rgba(255, 255, 255, 0.05)",
+  borderRadius: "8px",
+  transition: "transform 0.2s ease",
+  "&:hover": {
+    transform: "translateY(-2px)",
+  },
   "& .label": {
     fontSize: "0.875rem",
     color: "rgba(255, 255, 255, 0.7)",
-    marginBottom: "4px",
+    marginBottom: "8px",
   },
   "& .value": {
     fontSize: "1.25rem",
     fontWeight: "500",
+    color: "#fff",
   },
 });
 
@@ -95,11 +114,40 @@ function Stats() {
   const currentStreak = 4;
   const bestRecord = 10;
   const productiveDays = 37;
-  const dayProgress = 58;
-  const workingHours = "23 HR 59 MIN";
-  const timeToFreedom = "10 HR 8 MIN";
-  const dayStart = "00:00";
-  const dayEnd = "23:59";
+  
+  // Calculate day progress
+  const calculateDayProgress = () => {
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    
+    const totalDayDuration = endOfDay - startOfDay;
+    const elapsedTime = now - startOfDay;
+    const progress = Math.min(100, Math.round((elapsedTime / totalDayDuration) * 100));
+    
+    return progress;
+  };
+
+  const dayProgress = calculateDayProgress();
+  
+  // Calculate working hours and time to freedom
+  const calculateTimeStats = () => {
+    const now = new Date();
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59); // 11:59 PM
+    
+    const remainingWorkingHours = Math.max(0, endOfDay - now);
+    const hoursRemaining = Math.floor(remainingWorkingHours / (1000 * 60 * 60));
+    const minutesRemaining = Math.floor((remainingWorkingHours % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return {
+      workingHours: "24 HR 0 MIN",
+      timeToFreedom: `${hoursRemaining} HR ${minutesRemaining} MIN`,
+      dayStart: "12:00 AM",
+      dayEnd: "11:59 PM"
+    };
+  };
+
+  const timeStats = calculateTimeStats();
 
   return (
     <Container>
@@ -178,7 +226,7 @@ function Stats() {
           alignItems: "center",
           gap: "8px"
         }}>
-          Last Streak Update: 2025-02-11 
+          Last Streak Update: {new Date().toLocaleDateString()}
           <span style={{ 
             color: "#ff4d4d",
             backgroundColor: "rgba(255, 77, 77, 0.1)",
@@ -186,7 +234,7 @@ function Stats() {
             borderRadius: "4px",
             fontSize: "0.75rem"
           }}>
-            Needs Repair
+            Active
           </span>
         </Typography>
 
@@ -195,36 +243,32 @@ function Stats() {
             Day Progress 🌱
           </Typography>
           <ProgressBarContainer>
+            <Typography className="progress-label">
+              {dayProgress}% Complete
+            </Typography>
             <LinearProgress
               variant="determinate"
               value={dayProgress}
               color="success"
             />
-            <Typography variant="body1" style={{ 
-              marginTop: "8px",
-              color: "#4CAF50",
-              fontWeight: "500"
-            }}>
-              {dayProgress}% Complete
-            </Typography>
           </ProgressBarContainer>
 
           <TimeContainer>
             <TimeItem>
               <Typography className="label">Working Hours</Typography>
-              <Typography className="value">{workingHours}</Typography>
+              <Typography className="value">{timeStats.workingHours}</Typography>
             </TimeItem>
             <TimeItem>
-              <Typography className="label">Time to Freedom</Typography>
-              <Typography className="value">{timeToFreedom}</Typography>
+              <Typography className="label">Time to Cook</Typography>
+              <Typography className="value">{timeStats.timeToFreedom}</Typography>
             </TimeItem>
             <TimeItem>
               <Typography className="label">Starts At</Typography>
-              <Typography className="value">{dayStart}</Typography>
+              <Typography className="value">{timeStats.dayStart}</Typography>
             </TimeItem>
             <TimeItem>
               <Typography className="label">Ends At</Typography>
-              <Typography className="value">{dayEnd}</Typography>
+              <Typography className="value">{timeStats.dayEnd}</Typography>
             </TimeItem>
           </TimeContainer>
         </div>
