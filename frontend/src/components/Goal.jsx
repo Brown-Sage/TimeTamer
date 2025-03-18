@@ -70,7 +70,7 @@ function Goal() {
 
   // Add a new task
   const addTask = () => {
-    if (newTask.trim() === '') return; // Prevent empty tasks
+    if (newTask.trim() === '') return;
     const newTaskObject = { 
       id: Date.now(), 
       text: newTask, 
@@ -78,12 +78,13 @@ function Goal() {
       duration: parseInt(taskDuration) || 0,
       startTime: null,
       isRunning: false,
-      priority: taskPriority
+      priority: taskPriority,
+      elapsedTime: 0
     };
     setTasks((prevTasks) => [...prevTasks, newTaskObject]);
-    setNewTask(''); // Clear input field
-    setTaskDuration(''); // Clear duration input
-    setTaskPriority('medium'); // Reset priority to default
+    setNewTask('');
+    setTaskDuration('');
+    setTaskPriority('medium');
   };
 
   // Toggle task completion status
@@ -105,7 +106,7 @@ function Goal() {
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
         task.id === id 
-          ? { ...task, startTime: Date.now(), isRunning: true }
+          ? { ...task, startTime: Date.now() - (task.elapsedTime * 60 * 1000), isRunning: true }
           : task
       )
     );
@@ -114,17 +115,27 @@ function Goal() {
   // Stop timer for a task
   const stopTaskTimer = (id) => {
     setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === id 
-          ? { ...task, isRunning: false }
-          : task
-      )
+      prevTasks.map((task) => {
+        if (task.id === id) {
+          const elapsedMinutes = task.startTime 
+            ? (Date.now() - task.startTime) / (60 * 1000)
+            : 0;
+          return {
+            ...task,
+            isRunning: false,
+            elapsedTime: task.elapsedTime + (elapsedMinutes)
+          };
+        }
+        return task;
+      })
     );
   };
 
   // Calculate remaining time for a task
   const getRemainingTime = (task) => {
-    if (!task.startTime || !task.isRunning) return task.duration;
+    if (!task.startTime || !task.isRunning) {
+      return task.duration - task.elapsedTime;
+    }
     const elapsed = (Date.now() - task.startTime) / 1000; // Convert to seconds
     const remainingMinutes = Math.max(0, task.duration - (elapsed / 60));
     return remainingMinutes;
