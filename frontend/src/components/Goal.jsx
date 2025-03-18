@@ -8,6 +8,8 @@ function Goal() {
   const [newTask, setNewTask] = useState('');
   const [todayStats, setTodayStats] = useState({ completed: 0, total: 0 });
   const [isExpanded, setIsExpanded] = useState(false);
+  const [taskDuration, setTaskDuration] = useState('');
+  const [, setTimerUpdate] = useState(0);
 
   // Load tasks and calculate today's stats
   useEffect(() => {
@@ -15,6 +17,18 @@ function Goal() {
     setTasks(savedTasks);
     updateTodayStats(savedTasks);
   }, []);
+
+  // Timer update effect
+  useEffect(() => {
+    const hasRunningTasks = tasks.some(task => task.isRunning);
+    if (!hasRunningTasks) return;
+
+    const interval = setInterval(() => {
+      setTimerUpdate(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [tasks]);
 
   // Update stats whenever tasks change
   useEffect(() => {
@@ -56,9 +70,17 @@ function Goal() {
   // Add a new task
   const addTask = () => {
     if (newTask.trim() === '') return; // Prevent empty tasks
-    const newTaskObject = { id: Date.now(), text: newTask, completed: false };
+    const newTaskObject = { 
+      id: Date.now(), 
+      text: newTask, 
+      completed: false,
+      duration: parseInt(taskDuration) || 0, // Duration in minutes
+      startTime: null,
+      isRunning: false
+    };
     setTasks((prevTasks) => [...prevTasks, newTaskObject]);
     setNewTask(''); // Clear input field
+    setTaskDuration(''); // Clear duration input
   };
 
   // Toggle task completion status
@@ -73,6 +95,49 @@ function Goal() {
   // Delete a task
   const deleteTask = (id) => {
     setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+  };
+
+  // Start timer for a task
+  const startTaskTimer = (id) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === id 
+          ? { ...task, startTime: Date.now(), isRunning: true }
+          : task
+      )
+    );
+  };
+
+  // Stop timer for a task
+  const stopTaskTimer = (id) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === id 
+          ? { ...task, isRunning: false }
+          : task
+      )
+    );
+  };
+
+  // Calculate remaining time for a task
+  const getRemainingTime = (task) => {
+    if (!task.startTime || !task.isRunning) return task.duration;
+    const elapsed = (Date.now() - task.startTime) / 1000; // Convert to seconds
+    const remainingMinutes = Math.max(0, task.duration - (elapsed / 60));
+    return remainingMinutes;
+  };
+
+  // Format time in minutes to MM:SS
+  const formatTime = (minutes) => {
+    const mins = Math.floor(minutes);
+    const secs = Math.floor((minutes - mins) * 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Check if timer is finished
+  const isTimerFinished = (task) => {
+    if (!task.isRunning) return false;
+    return getRemainingTime(task) <= 0;
   };
 
   return (
@@ -97,6 +162,14 @@ function Goal() {
                     onChange={handleInputChange}
                     placeholder="Add a new task"
                 />
+                <input
+                    type="number"
+                    value={taskDuration}
+                    onChange={(e) => setTaskDuration(e.target.value)}
+                    placeholder="Duration (min)"
+                    min="1"
+                    className="duration-input"
+                />
                 <button onClick={addTask}><IoMdAdd /></button>
             </div>
 
@@ -110,7 +183,32 @@ function Goal() {
                                 checked={task.completed}
                                 onChange={() => toggleTaskCompletion(task.id)}
                             />
-                            <span>{task.text}</span>
+                            <div className="task-details">
+                                <span className="task-text">{task.text}</span>
+                                <div className="task-timer">
+                                    <span className="task-duration">
+                                        {task.duration} min
+                                    </span>
+                                    {task.duration > 0 && (
+                                        <>
+                                            <span className={`timer-display ${isTimerFinished(task) ? 'finished' : ''}`}>
+                                                {formatTime(getRemainingTime(task))}
+                                            </span>
+                                            {!task.completed && (
+                                                <button 
+                                                    className={`timer-button ${task.isRunning ? 'stop' : 'start'}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        task.isRunning ? stopTaskTimer(task.id) : startTaskTimer(task.id);
+                                                    }}
+                                                >
+                                                    {task.isRunning ? 'Stop' : 'Start'}
+                                                </button>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                         <button onClick={() => deleteTask(task.id)}><FaTrash color='white' /></button>
                     </li>

@@ -22,7 +22,7 @@
     display: flex;
     position: absolute;
     top: 30%;
-    width: 350px;
+    width: 360px;
     height: auto;
     border-radius: 8px;
     padding: 1rem;
@@ -93,36 +93,118 @@
 
 .add-task {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
-.add-task input {
+.add-task input[type="text"] {
     flex: 1;
-    padding: 0.5rem;
-    border: 1px solid rgba(221, 221, 221, 0.3);
+    padding: 8px;
+    border: 1px solid #ccc;
     border-radius: 4px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    color: white;
 }
 
-.add-task input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
+.add-task input[type="time"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.add-task input[type="number"] {
+    width: 100px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
 .add-task button {
-    padding: 0.5rem 1rem;
-    background-color: #4caf50;
+    padding: 8px 12px;
+    background-color: #4CAF50;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
 }
 
-.add-task button:hover {
-    background-color: #45a049;
+.task-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.task-text {
+    font-size: 1em;
+}
+
+.task-time {
+    font-size: 0.8em;
+    color: #666;
+}
+
+.task-timer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.task-duration {
+    font-size: 0.8em;
+    color: #666;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.timer-display {
+    font-family: monospace;
+    font-size: 0.9em;
+    color: #4CAF50;
+    background: rgba(76, 175, 80, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.timer-display.finished {
+    color: #f44336;
+    background: rgba(244, 67, 54, 0.1);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.timer-button {
+    padding: 4px 8px;
+    font-size: 0.8em;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transition: background-color 0.2s;
+}
+
+.timer-button.start {
+    background: #4CAF50;
+}
+
+.timer-button.stop {
+    background: #f44336;
+}
+
+.timer-button:hover {
+    opacity: 0.9;
 }
 
 /* Task list */
