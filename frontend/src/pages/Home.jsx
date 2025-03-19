@@ -106,7 +106,7 @@ function Home() {
                 <Goal/>
             </div>
             <div className="spotify">
-                <SpotifyFrame trackUri="7ouMYWpwJ422jRcDASZB7P" />
+                <SpotifyFrame playlistId="37i9dQZF1DXcBWIGoYBM5M" />
             </div>
             <div className="Maintimer">
                 <Timer />
