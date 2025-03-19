@@ -167,7 +167,7 @@ function Goal() {
     <div className={`task-manager ${isExpanded ? 'expanded' : ''}`} 
          onClick={() => setIsExpanded(true)}>
         <div className="minimized-view">
-            TASK
+            Tasks
         </div>
         
         <div className="expanded-view">
