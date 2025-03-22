@@ -168,13 +168,13 @@ function Stats() {
     <Container>
       <Header>
         <Typography variant="h3" style={{ 
-          color: "#ff4d4d",
+          color: "SkyBlue",
           fontWeight: "600",
           display: "flex",
           alignItems: "center",
           gap: "8px"
         }}>
-          Streak 
+          Statistics
           <LottieWrapper>
             <Lottie
               animationData={streakAnimation}
