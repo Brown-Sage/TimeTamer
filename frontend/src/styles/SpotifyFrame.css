@@ -7,3 +7,64 @@
     align-self: flex-end;
 
 }
+
+.spotify-container {
+  position: absolute;
+  right: 20px;
+  width: 300px;
+  background: rgba(18, 18, 18, 0.8);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.spotify-container.maximized {
+  width: 400px;
+}
+
+.spotify-header {
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px 12px 0 0;
+}
+
+.maximize-button {
+  background: transparent;
+  border: none;
+  color: #1DB954;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.maximize-button:hover {
+  background: rgba(29, 185, 84, 0.1);
+  transform: scale(1.1);
+}
+
+.maximize-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .spotify-container {
+    width: 250px;
+    right: 10px;
+  }
+  
+  .spotify-container.maximized {
+    width: 320px;
+  }
+}
