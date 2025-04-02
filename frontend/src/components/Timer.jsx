@@ -3,7 +3,8 @@ import { IoClose } from "react-icons/io5";
 import { IoSettingsSharp } from "react-icons/io5";
 import "../styles/Timer.css";
 import alarmsound from "../assets/mixkit-clear-announce-tones-2861.wav";
-import { AlarmSharp } from "@mui/icons-material";
+import WebcamDetector from "./WebcamDetector";
+import "../styles/WebcamDetector.css";
 
 function Timer() {
     const [timerSettings, setTimerSettings] = useState({
@@ -17,15 +18,17 @@ function Timer() {
     const [isRunning, setIsRunning] = useState(false);
     const [mode, setMode] = useState('focus');
     const [focusCount, setFocusCount] = useState(0);
-    const [isEditing, setIsEditing] = useState(false);
     const inputRef = useRef(null);
-    const [editingField, setEditingField] = useState(null); // 'hours' or 'minutes'
+    const [editingField, setEditingField] = useState(null);
     const [editValue, setEditValue] = useState("");
     const [showSettings, setShowSettings] = useState(false);
     const [settings, setSettings] = useState({
         notifications: localStorage.getItem('timerNotifications') === 'true',
-        alarm: localStorage.getItem('timerAlarm') === 'true'
+        alarm: localStorage.getItem('timerAlarm') === 'true',
+        webcamDetection: localStorage.getItem('timerWebcamDetection') === 'true'
     });
+    const [isUserPresent, setIsUserPresent] = useState(true);
+    const [wasRunningBeforeAbsence, setWasRunningBeforeAbsence] = useState(false);
 
     const startStop = () => {
         setIsRunning((prev) => !prev);
@@ -81,6 +84,10 @@ function Timer() {
         }
         setEditingField(null);
     };
+    const TrackFocus = () => {
+        const focusTime = focusCount == 0 ? focus.minutes : focusCount * focus.minutes;
+        return focusTime
+    }
 
     useEffect(() => {
         // Load saved settings from localStorage
@@ -123,51 +130,67 @@ function Timer() {
     useEffect(() => {
         let interval;
         if (isRunning) {
-            interval = setInterval(() => {        // Timer does not update after 1st session it stays 00, gotta fix that
-                setSeconds((prevSeconds) => {
-                    if (prevSeconds === 0) {
-                        if (minutes === 0) {
-                            if (hours === 0) {
-                                clearInterval(interval);
-                                setIsRunning(false);
-                                if(mode === 'focus'){
-                                    // Only increment focus count when focus session completes
-                                    if(settings.alarm) playaudio();
-                                    const nextCount = focusCount + 1;
-                                    setFocusCount(nextCount);
-                                    
-                                    // Ditermine next break type based on new count
-                                    if (nextCount % 4 === 0) {
-                                        handleLongBreak();
-                                    } else {
-                                        handleBreak();
+            // Only run timer if user is present or webcam detection is disabled
+            if (isUserPresent || !settings.webcamDetection) {
+                interval = setInterval(() => {
+                    setSeconds((prevSeconds) => {
+                        if (prevSeconds === 0) {
+                            if (minutes === 0) {
+                                if (hours === 0) {
+                                    clearInterval(interval);
+                                    setIsRunning(false);
+                                    if(mode === 'focus'){
+                                        if(settings.alarm) playaudio();
+                                        const nextCount = focusCount + 1;
+                                        setFocusCount(nextCount);
+                                        
+                                        if (nextCount % 4 === 0) {
+                                            handleLongBreak();
+                                        } else {
+                                            handleBreak();
+                                        }
+                                    } else if(mode === 'break' || mode === 'longbreak'){
+                                        if(settings.alarm) playaudio();
+                                        handleFocus();
                                     }
-                                } else if(mode === 'break' || mode === 'longbreak'){
-                                    if(settings.alarm) playaudio();
-                                    handleFocus();
+                                    return 0;
                                 }
-                                return 0;
-                            } else {
                                 setHours((prevHours) => prevHours - 1);
                                 setMinutes(59);
                                 return 0;
                             }
-                        } else {
                             setMinutes((prevMinutes) => prevMinutes - 1);
                             return 59;
                         }
-                    }
-                    return prevSeconds - 1;
-                });
-            }, 1000);
+                        return prevSeconds - 1;
+                    });
+                }, 1000);
+            }
         } else {
             clearInterval(interval);
         }
         return () => clearInterval(interval);
-    }, [isRunning, minutes, seconds, hours, mode, focusCount, settings.alarm]);
+    }, [isRunning, minutes, seconds, hours, mode, focusCount, settings.alarm, isUserPresent, settings.webcamDetection]);
 
     const toggleSettings = () => {
         setShowSettings(!showSettings);
+    };
+
+    const handleUserPresenceChange = (present) => {
+        console.log('User presence changed:', present);
+        setIsUserPresent(present);
+        
+        if (!present && settings.webcamDetection) {
+            // Store the running state before pausing
+            if (isRunning) {
+                setWasRunningBeforeAbsence(true);
+                setIsRunning(false);
+            }
+        } else if (present && wasRunningBeforeAbsence) {
+            // Resume if it was running before
+            setIsRunning(true);
+            setWasRunningBeforeAbsence(false);
+        }
     };
 
     const handleSettingChange = (setting) => {
@@ -217,6 +240,25 @@ function Timer() {
                         />
                         <label htmlFor="alarm">Enable alarm sound</label>
                     </div>
+                    <div className="settings-option">
+                        <input
+                            type="checkbox"
+                            id="webcamDetection"
+                            checked={settings.webcamDetection}
+                            onChange={() => handleSettingChange('webcamDetection')}
+                        />
+                        <label htmlFor="webcamDetection">Enable webcam detection</label>
+                    </div>
+                </div>
+            )}
+
+            {settings.webcamDetection && (
+                <WebcamDetector onUserPresenceChange={handleUserPresenceChange} />
+            )}
+
+            {settings.webcamDetection && !isUserPresent && (
+                <div className="user-absence-notice">
+                    Timer paused - User not detected
                 </div>
             )}
 
@@ -287,6 +329,7 @@ function Timer() {
                 )}
             </div>
             <div id="session-count">Session: {focusCount}</div>
+            <div> {TrackFocus }</div>
             <button id="startStopBtn" onClick={startStop}>
                 {isRunning ? "Stop" : "Start"}
             </button>
