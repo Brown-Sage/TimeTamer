@@ -1,4 +1,4 @@
-import { styled } from "@mui/material/styles";
+import { styled, alpha } from "@mui/material/styles";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import LinearProgress from "@mui/material/LinearProgress";
@@ -12,6 +12,7 @@ import rocketAnimation from "../assets/animations/rocket.json";
 import starAnimation from "../assets/animations/star.json";
 import runnerAnimation from "../assets/animations/runner.json";
 import plantAnimation from "../assets/animations/plant.json";
+import { useEffect, useState } from "react";
 
 const Container = styled("div")({
   backgroundColor: "rgba(26, 26, 26, 0.95)",
@@ -126,10 +127,88 @@ const LottieWrapper = styled('div')({
 });
 
 function Stats() {
-  const currentStreak = 4;
-  const bestRecord = 10;
-  const productiveDays = 37;
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [bestRecord, setBestRecord] = useState(0);
+  const [productiveDays, setProductiveDays] = useState(0);
+  const [lastStreakUpdate, setLastStreakUpdate] = useState("");
+  const [completedFocusSessions, setCompletedFocusSessions] = useState(false);
+
+  // Load data from local storage
+  useEffect(() => {
+    const savedStreak = localStorage.getItem("currentStreak");
+    const savedBestRecord = localStorage.getItem("bestRecord");
+    const savedProductiveDays = localStorage.getItem("productiveDays");
+    const savedLastStreakUpdate = localStorage.getItem("lastStreakUpdate");
+    const savedCompletedSessions = localStorage.getItem("completedFocusSessions");
+
+    if (savedStreak) setCurrentStreak(parseInt(savedStreak, 10));
+    if (savedBestRecord) setBestRecord(parseInt(savedBestRecord, 10));
+    if (savedProductiveDays) setProductiveDays(parseInt(savedProductiveDays, 10));
+    if (savedLastStreakUpdate) setLastStreakUpdate(savedLastStreakUpdate);
+    if (savedCompletedSessions) setCompletedFocusSessions(savedCompletedSessions === 'true');
+  }, []);
   
+  // Update data in local storage
+  useEffect(() => {
+    localStorage.setItem("currentStreak", currentStreak.toString());
+    localStorage.setItem("bestRecord", bestRecord.toString());
+    localStorage.setItem("productiveDays", productiveDays.toString());
+    localStorage.setItem("lastStreakUpdate", lastStreakUpdate);
+    localStorage.setItem("completedFocusSessions", completedFocusSessions.toString());
+  }, [currentStreak, bestRecord, productiveDays, lastStreakUpdate, completedFocusSessions]);
+
+  // Check for a new day and update streak accordingly
+  useEffect(() => {
+    const today = new Date().toLocaleDateString();
+    if (lastStreakUpdate !== today) {
+      if (completedFocusSessions) {
+        setCurrentStreak((prevStreak) => prevStreak + 1);
+        setBestRecord((prevBest) => Math.max(prevBest, prevStreak + 1));
+        setProductiveDays((prevDays) => prevDays + 1);
+        setLastStreakUpdate(today);
+      } else {
+        setCurrentStreak(0);
+        setLastStreakUpdate(today);
+      }
+      setCompletedFocusSessions(false);
+    }
+  }, [lastStreakUpdate, completedFocusSessions]);
+
+  // Simulate focus session completion for testing
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'f' || event.key === 'F') {
+        // Trigger focus session completion
+        handleFocusSessionCompleted();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  // Function to be called when a focus session is completed
+  const handleFocusSessionCompleted = () => {
+    setCompletedFocusSessions(true);
+    const today = new Date().toLocaleDateString();
+    if (lastStreakUpdate !== today) {
+        setCurrentStreak((prevStreak) => {
+            const newStreak = prevStreak + 1;
+            setBestRecord((prevBest) => Math.max(prevBest, newStreak));
+            setProductiveDays((prevDays) => prevDays + 1);
+            setLastStreakUpdate(today);
+            return newStreak;
+        });
+      }
+  };
+  
+  // Display Last streak update
+  const lastUpdate = lastStreakUpdate ? new Date(lastStreakUpdate).toLocaleDateString(): new Date().toLocaleDateString()
+
+
   // Calculate day progress
   const calculateDayProgress = () => {
     const now = new Date();
@@ -192,16 +271,18 @@ function Stats() {
           <IconButton 
             color="warning"
             sx={{
-              backgroundColor: "rgba(255, 152, 0, 0.1)",
-              "&:hover": { backgroundColor: "rgba(255, 152, 0, 0.2)" }
+              backgroundColor: (theme) => alpha(theme.palette.warning.main, 0.1),
+              "&:hover": { backgroundColor: (theme) => alpha(theme.palette.warning.main, 0.2) }
             }}
           >
             <CloudOffIcon />
           </IconButton>
           <IconButton
             sx={{
-              backgroundColor: "rgba(255, 255, 255, 0.1)",
-              "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" }
+              backgroundColor: (theme) => alpha(theme.palette.common.white, 0.1),
+              "&:hover": { 
+                backgroundColor: (theme) => alpha(theme.palette.common.white, 0.2)
+              }
             }}
           >
             <SettingsIcon />
@@ -303,7 +384,7 @@ function Stats() {
           alignItems: "center",
           gap: "8px"
         }}>
-          Last Streak Update: {new Date().toLocaleDateString()}
+          Last Streak Update: {lastUpdate}
           <span style={{ 
             color: "#ff4d4d",
             backgroundColor: "rgba(255, 77, 77, 0.1)",
