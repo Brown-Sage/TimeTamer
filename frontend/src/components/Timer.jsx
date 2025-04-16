@@ -5,6 +5,7 @@ import "../styles/Timer.css";
 import alarmsound from "../assets/mixkit-clear-announce-tones-2861.wav";
 import WebcamDetector from "./WebcamDetector";
 import "../styles/WebcamDetector.css";
+import axios from "axios";
 
 function Timer() {
     const [timerSettings, setTimerSettings] = useState({
@@ -17,7 +18,17 @@ function Timer() {
     const [seconds, setSeconds] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
     const [mode, setMode] = useState('focus');
-    const [focusCount, setFocusCount] = useState(0);
+    const [focusCount, setFocusCount] = useState(() => {
+        const savedData = localStorage.getItem('focusSessionData');
+        if (savedData) {
+            const { count, lastUpdate } = JSON.parse(savedData);
+            const today = new Date().toLocaleDateString();
+            if (lastUpdate === today) {
+                return count;
+            }
+        }
+        return 0;
+    });
     const inputRef = useRef(null);
     const [editingField, setEditingField] = useState(null);
     const [editValue, setEditValue] = useState("");
@@ -28,7 +39,6 @@ function Timer() {
         webcamDetection: localStorage.getItem('timerWebcamDetection') === 'true'
     });
     const [isUserPresent, setIsUserPresent] = useState(true);
-    const [wasRunningBeforeAbsence, setWasRunningBeforeAbsence] = useState(false);
 
     const startStop = () => {
         setIsRunning((prev) => !prev);
@@ -78,7 +88,7 @@ function Timer() {
                 [mode]: { ...timerSettings[mode], minutes: newMinutes }
             }));
         }
-        else if (editingField === 'seconds') {
+        else if (editingField === 'seconds') {  // Seconds are not saved btw(no point in saving this)
             const newSeconds = Math.min(Math.max(value, 0), 59);
             setSeconds(newSeconds);
         }
@@ -99,33 +109,20 @@ function Timer() {
         }
     }, []);
 
-    const handleFocus = () => {
-        setIsRunning(false);
-        setMode('focus');
-        setMinutes(timerSettings.focus.minutes);
-        setSeconds(0);
-    };
-
-    const handleBreak = () => {
-        setIsRunning(false);
-        setMode('break');
-        setMinutes(timerSettings.break.minutes);
-        setSeconds(0);
-    };
-
-    const handleLongBreak = () => {
-        setIsRunning(false);
-        setMode('longbreak');
-        setMinutes(timerSettings.longbreak.minutes);
-        setSeconds(0);
-    };
-    const playaudio = () =>{
-        const audio = new Audio(alarmsound)
-        audio.play().catch((error) => {
-            console.error('Failed to play audio:', error);
-        });
-    };
-    
+    useEffect(() => {
+        const today = new Date().toLocaleDateString();
+        const savedData = localStorage.getItem('focusSessionData');
+        if (savedData) {
+            const { lastUpdate } = JSON.parse(savedData);
+            if (lastUpdate !== today) {
+                setFocusCount(0);
+                localStorage.setItem('focusSessionData', JSON.stringify({
+                    count: 0,
+                    lastUpdate: today
+                }));
+            }
+        }
+    }, []);
 
     useEffect(() => {
         let interval;
@@ -134,7 +131,7 @@ function Timer() {
             if (isUserPresent || !settings.webcamDetection) {
                 interval = setInterval(() => {
                     setSeconds((prevSeconds) => {
-                        if (prevSeconds === 0) {
+                        if (prevSeconds === 0) { 
                             if (minutes === 0) {
                                 if (hours === 0) {
                                     clearInterval(interval);
@@ -143,6 +140,11 @@ function Timer() {
                                         if(settings.alarm) playaudio();
                                         const nextCount = focusCount + 1;
                                         setFocusCount(nextCount);
+                                        const today = new Date().toLocaleDateString();
+                                        localStorage.setItem('focusSessionData', JSON.stringify({
+                                            count: nextCount,
+                                            lastUpdate: today
+                                        }));
                                         
                                         if (nextCount % 4 === 0) {
                                             handleLongBreak();
@@ -172,6 +174,51 @@ function Timer() {
         return () => clearInterval(interval);
     }, [isRunning, minutes, seconds, hours, mode, focusCount, settings.alarm, isUserPresent, settings.webcamDetection]);
 
+    const handleFocus = () => {
+        setIsRunning(false);
+        setMode('focus');
+        setMinutes(timerSettings.focus.minutes);
+        setSeconds(0);
+    };
+
+    const handleBreak = () => {
+        setIsRunning(false);
+        setMode('break');
+        setMinutes(timerSettings.break.minutes);
+        setSeconds(0);
+    };
+
+    const handleLongBreak = () => {
+        setIsRunning(false);
+        setMode('longbreak');
+        setMinutes(timerSettings.longbreak.minutes);
+        setSeconds(0);
+        getSuggestions()
+    };
+    const playaudio = () =>{
+        const audio = new Audio(alarmsound)
+        audio.play().catch((error) => {
+            console.error('Failed to play audio:', error);
+        });
+    };
+    
+     const getSuggestions = () => {
+        console.log('login')
+        const formData = new FormData()
+        formData.append('user', "4ffb4ce7-19fb-4049-a908-0ecc639c9916")
+        let user ="4ffb4ce7-19fb-4049-a908-0ecc639c9916"
+        let url = `https://n8n.aitech.work/webhook-test/pomodoro/suggestions?user=${user}`
+         
+        axios
+            .get(url)
+            .then((resp) => {
+                console.log("SUGGESTIONS RESP", resp)
+            })
+            .catch((err) => {
+                console.log('sugges err', err)
+            })
+    }
+
     const toggleSettings = () => {
         setShowSettings(!showSettings);
     };
@@ -181,16 +228,12 @@ function Timer() {
         setIsUserPresent(present);
         
         if (!present && settings.webcamDetection) {
-            // Store the running state before pausing
+            // Pause the timer if a user is not detected.
             if (isRunning) {
-                setWasRunningBeforeAbsence(true);
                 setIsRunning(false);
             }
-        } else if (present && wasRunningBeforeAbsence) {
-            // Resume if it was running before
-            setIsRunning(true);
-            setWasRunningBeforeAbsence(false);
         }
+        // No auto-resume when face is detected.
     };
 
     const handleSettingChange = (setting) => {
