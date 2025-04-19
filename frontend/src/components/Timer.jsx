@@ -111,6 +111,14 @@ function Timer() {
 
     useEffect(() => {
         const today = new Date().toLocaleDateString();
+        localStorage.setItem('focusSessionData', JSON.stringify({
+            count: focusCount,
+            lastUpdate: today
+        }));
+    }, [focusCount]);
+
+    useEffect(() => {
+        const today = new Date().toLocaleDateString();
         const savedData = localStorage.getItem('focusSessionData');
         if (savedData) {
             const { lastUpdate } = JSON.parse(savedData);
@@ -121,13 +129,33 @@ function Timer() {
                     lastUpdate: today
                 }));
             }
+        } else {
+            localStorage.setItem('focusSessionData', JSON.stringify({
+                count: 0,
+                lastUpdate: today
+            }));
         }
     }, []);
+
+    const handleFocusSessionCompleted = () => {
+        const nextCount = focusCount + 1;
+        setFocusCount(nextCount);
+        
+        // Store session data in localStorage
+        const today = new Date().toLocaleDateString();
+        localStorage.setItem('focusSessionData', JSON.stringify({
+            count: nextCount,
+            lastUpdate: today
+        }));
+
+        // Notify Stats component about completed session
+        const event = new CustomEvent('focusSessionCompleted');
+        window.dispatchEvent(event);
+    };
 
     useEffect(() => {
         let interval;
         if (isRunning) {
-            // Only run timer if user is present or webcam detection is disabled
             if (isUserPresent || !settings.webcamDetection) {
                 interval = setInterval(() => {
                     setSeconds((prevSeconds) => {
@@ -138,15 +166,30 @@ function Timer() {
                                     setIsRunning(false);
                                     if(mode === 'focus'){
                                         if(settings.alarm) playaudio();
-                                        const nextCount = focusCount + 1;
-                                        setFocusCount(nextCount);
-                                        const today = new Date().toLocaleDateString();
-                                        localStorage.setItem('focusSessionData', JSON.stringify({
-                                            count: nextCount,
-                                            lastUpdate: today
-                                        }));
+                                        handleFocusSessionCompleted();
                                         
-                                        if (nextCount % 4 === 0) {
+                                        // Calculate total minutes for this session
+                                        const sessionMinutes = timerSettings.focus.minutes;
+                                        
+                                        // Dispatch custom event with session data
+                                        const sessionCompletedEvent = new CustomEvent('focusSessionCompleted', {
+                                            detail: {
+                                                minutes: sessionMinutes,
+                                                timestamp: new Date().toISOString()
+                                            }
+                                        });
+                                        window.dispatchEvent(sessionCompletedEvent);
+                                        
+                                        // Store session data in localStorage
+                                        const savedSessions = JSON.parse(localStorage.getItem('focusSessions') || '[]');
+                                        savedSessions.push({
+                                            minutes: sessionMinutes,
+                                            timestamp: new Date().toISOString()
+                                        });
+                                        
+                                        localStorage.setItem('focusSessions', JSON.stringify(savedSessions));
+                                        
+                                        if ((focusCount + 1) % 4 === 0) {
                                             handleLongBreak();
                                         } else {
                                             handleBreak();
@@ -172,7 +215,7 @@ function Timer() {
             clearInterval(interval);
         }
         return () => clearInterval(interval);
-    }, [isRunning, minutes, seconds, hours, mode, focusCount, settings.alarm, isUserPresent, settings.webcamDetection]);
+    }, [isRunning, minutes, seconds, hours, mode, focusCount, settings.alarm, isUserPresent, settings.webcamDetection, timerSettings.focus.minutes]);
 
     const handleFocus = () => {
         setIsRunning(false);

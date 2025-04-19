@@ -13,12 +13,12 @@ import starAnimation from "../assets/animations/star.json";
 import runnerAnimation from "../assets/animations/runner.json";
 import plantAnimation from "../assets/animations/plant.json";
 import { useEffect, useState } from "react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const Container = styled("div")({
   backgroundColor: "rgba(26, 26, 26, 0.95)",
   padding: "10px",
-  width: "98.8vw",
-  height: "97.6vh",
+  width: "98.8vw",  
   color: "#fff",
   fontFamily: "Roboto, sans-serif",
   
@@ -57,23 +57,48 @@ const StatCard = styled(Card)({
 const DayProgressCard = styled(Card)({
   backgroundColor: "rgba(44, 44, 44, 0.8)",
   color: "#fff",
-  padding: "24px",
+  padding: "32px",
   borderRadius: "16px",
   border: "1px solid rgba(255, 255, 255, 0.1)",
   boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
+  "& h5": {
+    marginBottom: "24px",
+    fontWeight: "600",
+    color: "#81C784"
+  },
+  "& .day-status": {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    marginBottom: "32px",
+    padding: "8px 16px",
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderRadius: "8px",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    "& .status-indicator": {
+      width: "8px",
+      height: "8px",
+      borderRadius: "50%",
+      backgroundColor: "#4CAF50"
+    }
+  }
 });
 
 const ProgressBarContainer = styled("div")({
   margin: "24px 0",
   position: "relative",
+  padding: "8px",
+  backgroundColor: "rgba(0, 0, 0, 0.2)",
+  borderRadius: "12px",
+  border: "1px solid rgba(255, 255, 255, 0.05)",
   "& .MuiLinearProgress-root": {
-    height: "16px",
-    borderRadius: "8px",
+    height: "12px",
+    borderRadius: "6px",
     backgroundColor: "rgba(255, 255, 255, 0.1)",
     "& .MuiLinearProgress-bar": {
-      borderRadius: "8px",
-      background: "linear-gradient(90deg, #4CAF50, #8BC34A)",
-    },
+      borderRadius: "6px",
+      background: "linear-gradient(90deg, #4CAF50, #81C784)"
+    }
   },
   "& .progress-label": {
     position: "absolute",
@@ -81,7 +106,8 @@ const ProgressBarContainer = styled("div")({
     right: "0",
     fontSize: "0.875rem",
     color: "rgba(255, 255, 255, 0.7)",
-  },
+    fontWeight: "500"
+  }
 });
 
 const TimeContainer = styled("div")({
@@ -89,31 +115,37 @@ const TimeContainer = styled("div")({
   gridTemplateColumns: "repeat(2, 1fr)",
   gap: "20px",
   marginTop: "32px",
-  padding: "20px",
-  backgroundColor: "rgba(0, 0, 0, 0.2)",
-  borderRadius: "12px",
+  padding: "24px",
+  backgroundColor: "rgba(0, 0, 0, 0.3)",
+  borderRadius: "16px",
   border: "1px solid rgba(255, 255, 255, 0.05)",
+  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
 });
 
 const TimeItem = styled("div")({
   textAlign: "center",
-  padding: "12px",
+  padding: "20px",
   backgroundColor: "rgba(255, 255, 255, 0.05)",
-  borderRadius: "8px",
-  transition: "transform 0.2s ease",
+  borderRadius: "12px",
+  transition: "transform 0.2s ease, box-shadow 0.2s ease",
+  border: "1px solid rgba(255, 255, 255, 0.1)",
   "&:hover": {
     transform: "translateY(-2px)",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)"
   },
   "& .label": {
-    fontSize: "0.875rem",
+    fontSize: "0.9rem",
     color: "rgba(255, 255, 255, 0.7)",
-    marginBottom: "8px",
+    marginBottom: "12px",
+    fontWeight: "500",
+    letterSpacing: "0.5px"
   },
   "& .value": {
-    fontSize: "1.25rem",
-    fontWeight: "500",
+    fontSize: "1.5rem",
+    fontWeight: "600",
     color: "#fff",
-  },
+    textShadow: "0 2px 4px rgba(0, 0, 0, 0.2)"
+  }
 });
 
 const LottieWrapper = styled('div')({
@@ -126,12 +158,41 @@ const LottieWrapper = styled('div')({
   marginTop: "-4px"
 });
 
+const GraphCard = styled(Card)({
+    backgroundColor: "rgba(44, 44, 44, 0.8)",
+    color: "#fff",
+    padding: "24px",
+    borderRadius: "16px",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    marginBottom: "32px",
+    height: "300px",
+});
+
 function Stats() {
   const [currentStreak, setCurrentStreak] = useState(0);
   const [bestRecord, setBestRecord] = useState(0);
   const [productiveDays, setProductiveDays] = useState(0);
   const [lastStreakUpdate, setLastStreakUpdate] = useState("");
   const [completedFocusSessions, setCompletedFocusSessions] = useState(false);
+
+  // Add state for focus time data with initial test data
+  const [focusTimeData, setFocusTimeData] = useState(() => {
+    const savedData = localStorage.getItem('focusTimeData');
+    if (savedData) {
+      return JSON.parse(savedData);
+    }
+    // Generate last 7 days of empty data
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return {
+        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        time: 0
+      };
+    });
+    localStorage.setItem('focusTimeData', JSON.stringify(last7Days));
+    return last7Days;
+  });
 
   // Load data from local storage
   useEffect(() => {
@@ -162,9 +223,12 @@ function Stats() {
     const today = new Date().toLocaleDateString();
     if (lastStreakUpdate !== today) {
       if (completedFocusSessions) {
-        setCurrentStreak((prevStreak) => prevStreak + 1);
-        setBestRecord((prevBest) => Math.max(prevBest, prevStreak + 1));
-        setProductiveDays((prevDays) => prevDays + 1);
+        setCurrentStreak(prev => {
+          const newStreak = prev + 1;
+          setBestRecord(prevBest => Math.max(prevBest, newStreak));
+          setProductiveDays(prevDays => prevDays + 1);
+          return newStreak;
+        });
         setLastStreakUpdate(today);
       } else {
         setCurrentStreak(0);
@@ -174,37 +238,116 @@ function Stats() {
     }
   }, [lastStreakUpdate, completedFocusSessions]);
 
-  // Simulate focus session completion for testing
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.key === 'f' || event.key === 'F') {
-        // Trigger focus session completion
-        handleFocusSessionCompleted();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
-
-  // Function to be called when a focus session is completed
-  const handleFocusSessionCompleted = () => {
-    setCompletedFocusSessions(true);
+  // Function to calculate total focus time for today
+  const calculateTodaysFocusTime = () => {
+    const savedSessions = JSON.parse(localStorage.getItem('focusSessions') || '[]');
     const today = new Date().toLocaleDateString();
-    if (lastStreakUpdate !== today) {
-        setCurrentStreak((prevStreak) => {
-            const newStreak = prevStreak + 1;
-            setBestRecord((prevBest) => Math.max(prevBest, newStreak));
-            setProductiveDays((prevDays) => prevDays + 1);
-            setLastStreakUpdate(today);
-            return newStreak;
+    const todaysSessions = savedSessions.filter(session => 
+      new Date(session.timestamp).toLocaleDateString() === today
+    );
+    return todaysSessions.reduce((total, session) => total + session.minutes, 0);
+  };
+
+  // Function to update focus time data
+  const updateFocusTimeData = () => {
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
+    });
+    
+    setFocusTimeData(prevData => {
+      let newData = [...prevData];
+      const todayIndex = newData.findIndex(item => item.date === formattedDate);
+      
+      if (todayIndex >= 0) {
+        newData[todayIndex] = {
+          ...newData[todayIndex],
+          time: calculateTodaysFocusTime()
+        };
+      } else {
+        if (newData.length >= 7) {
+          newData = newData.slice(1);
+        }
+        newData.push({ 
+          date: formattedDate, 
+          time: calculateTodaysFocusTime()
         });
       }
+      
+      localStorage.setItem('focusTimeData', JSON.stringify(newData));
+      return newData;
+    });
   };
-  
+
+  // Debug log for focus time data
+  useEffect(() => {
+    console.log('Current focus time data:', focusTimeData);
+  }, [focusTimeData]);
+
+  // Listen for focus session completion
+  useEffect(() => {
+    const handleFocusSessionCompleted = (event) => {
+      console.log('Focus session completed event received with data:', event.detail);
+      setCompletedFocusSessions(true);
+      const today = new Date().toLocaleDateString();
+      if (lastStreakUpdate !== today) {
+        setCurrentStreak(prev => {
+          const newStreak = prev + 1;
+          setBestRecord(prevBest => Math.max(prevBest, newStreak));
+          setProductiveDays(prevDays => prevDays + 1);
+          setLastStreakUpdate(today);
+          return newStreak;
+        });
+      }
+      
+      // Update focus time data with the new session
+      updateFocusTimeData();
+    };
+
+    window.addEventListener('focusSessionCompleted', handleFocusSessionCompleted);
+    return () => {
+      window.removeEventListener('focusSessionCompleted', handleFocusSessionCompleted);
+    };
+  }, [lastStreakUpdate]);
+
+  // Initialize focus time data with any existing sessions
+  useEffect(() => {
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
+    });
+    
+    // Generate last 7 days of data
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      const dateStr = date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      
+      // If it's today, calculate total focus time
+      if (dateStr === formattedDate) {
+        return {
+          date: dateStr,
+          time: calculateTodaysFocusTime()
+        };
+      }
+      
+      // For past days, use existing data or 0
+      const existingData = focusTimeData.find(item => item.date === dateStr);
+      return {
+        date: dateStr,
+        time: existingData ? existingData.time : 0
+      };
+    });
+    
+    setFocusTimeData(last7Days);
+    localStorage.setItem('focusTimeData', JSON.stringify(last7Days));
+  }, []);
+
   // Display Last streak update
   const lastUpdate = lastStreakUpdate ? new Date(lastStreakUpdate).toLocaleDateString(): new Date().toLocaleDateString()
 
@@ -358,6 +501,76 @@ function Stats() {
           </Typography>
         </StatCard>
       </StatsGrid>
+
+      <GraphCard>
+        <Typography variant="h6" style={{ 
+          marginBottom: "16px",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          color: "#4CAF50"
+        }}>
+          Daily Focus Time (minutes)
+        </Typography>
+        <ResponsiveContainer width="100%" height="80%">
+          <LineChart
+            data={focusTimeData}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid 
+              strokeDasharray="3 3" 
+              stroke="rgba(255, 255, 255, 0.2)"
+              vertical={false}
+            />
+            <XAxis 
+              dataKey="date" 
+              stroke="#fff"
+              tick={{ fill: '#fff', fontSize: 12 }}
+              axisLine={{ stroke: '#fff' }}
+            />
+            <YAxis 
+              stroke="#fff"
+              tick={{ fill: '#fff', fontSize: 12 }}
+              axisLine={{ stroke: '#fff' }}
+              label={{ 
+                value: 'Minutes', 
+                angle: -90, 
+                position: 'insideLeft',
+                fill: '#fff',
+                style: { fontSize: 12 }
+              }}
+            />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: 'rgba(44, 44, 44, 0.95)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                color: '#fff',
+                fontSize: '14px'
+              }}
+              formatter={(value) => [`${value} minutes`, 'Focus Time']}
+              cursor={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="time" 
+              stroke="#4CAF50" 
+              strokeWidth={3}
+              dot={{ 
+                fill: '#4CAF50', 
+                stroke: '#fff',
+                strokeWidth: 2,
+                r: 6
+              }}
+              activeDot={{ 
+                r: 8,
+                fill: '#fff',
+                stroke: '#4CAF50',
+                strokeWidth: 2
+              }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </GraphCard>
 
       <DayProgressCard>
         <Typography variant="h5" style={{ 
