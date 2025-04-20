@@ -4,7 +4,11 @@ import { FaTrash } from 'react-icons/fa';
 import '../styles/Goal.css';
 
 function Goal() {
-  const [tasks, setTasks] = useState([]);
+  // Initialize tasks from localStorage
+  const [tasks, setTasks] = useState(() => {
+    const savedTasks = localStorage.getItem('tasks');
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  });
   const [newTask, setNewTask] = useState('');
   const [todayStats, setTodayStats] = useState({ completed: 0, total: 0 });
   const [isExpanded, setIsExpanded] = useState(false);
@@ -12,12 +16,11 @@ function Goal() {
   const [taskPriority, setTaskPriority] = useState('medium');
   const [, setTimerUpdate] = useState(0);
 
-  // Load tasks and calculate today's stats
+  // Save tasks to localStorage whenever they change
   useEffect(() => {
-    const savedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
-    setTasks(savedTasks);
-    updateTodayStats(savedTasks);
-  }, []);
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    updateTodayStats(tasks);
+  }, [tasks]);
 
   // Timer update effect
   useEffect(() => {
@@ -26,35 +29,29 @@ function Goal() {
 
     const interval = setInterval(() => {
       setTimerUpdate(prev => prev + 1);
+      // Save current state of running tasks
+      setTasks(currentTasks => {
+        const updatedTasks = currentTasks.map(task => {
+          if (task.isRunning) {
+            const elapsedMinutes = task.startTime 
+              ? (Date.now() - task.startTime) / (60 * 1000)
+              : task.elapsedTime;
+            return { ...task, elapsedTime: elapsedMinutes };
+          }
+          return task;
+        });
+        return updatedTasks;
+      });
     }, 1000);
 
     return () => clearInterval(interval);
   }, [tasks]);
 
   // Update stats whenever tasks change
-  useEffect(() => {
-    updateTodayStats(tasks);
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-  }, [tasks]);
-
-  // Add click handler for outside clicks
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-        if (isExpanded && !event.target.closest('.task-manager')) {
-            setIsExpanded(false);
-        }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isExpanded]);
-
   const updateTodayStats = (currentTasks) => {
-    const today = new Date().toDateString();
+    const today = new Date().toLocaleDateString();
     const todayTasks = currentTasks.filter(task => 
-      new Date(task.id).toDateString() === today
+      new Date(task.createdAt).toLocaleDateString() === today
     );
     const completed = todayTasks.filter(task => task.completed).length;
     setTodayStats({
@@ -62,6 +59,20 @@ function Goal() {
       total: todayTasks.length
     });
   };
+
+  // Add click handler for outside clicks
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isExpanded && !event.target.closest('.task-manager')) {
+        setIsExpanded(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isExpanded]);
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -79,9 +90,14 @@ function Goal() {
       startTime: null,
       isRunning: false,
       priority: taskPriority,
-      elapsedTime: 0
+      elapsedTime: 0,
+      createdAt: new Date().toISOString(),
+      completedAt: null
     };
-    setTasks((prevTasks) => [...prevTasks, newTaskObject]);
+    setTasks(prevTasks => {
+      const updatedTasks = [...prevTasks, newTaskObject];
+      return updatedTasks;
+    });
     setNewTask('');
     setTaskDuration('');
     setTaskPriority('medium');
@@ -89,22 +105,30 @@ function Goal() {
 
   // Toggle task completion status
   const toggleTaskCompletion = (id) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
+        task.id === id ? { 
+          ...task, 
+          completed: !task.completed,
+          completedAt: !task.completed ? new Date().toISOString() : null,
+          isRunning: false, // Stop the timer if it was running
+          elapsedTime: task.isRunning ? 
+            (Date.now() - task.startTime) / (60 * 1000) : 
+            task.elapsedTime
+        } : task
       )
     );
   };
 
   // Delete a task
   const deleteTask = (id) => {
-    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+    setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
   };
 
   // Start timer for a task
   const startTaskTimer = (id) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
         task.id === id 
           ? { ...task, startTime: Date.now() - (task.elapsedTime * 60 * 1000), isRunning: true }
           : task
@@ -114,16 +138,16 @@ function Goal() {
 
   // Stop timer for a task
   const stopTaskTimer = (id) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) => {
+    setTasks(prevTasks =>
+      prevTasks.map(task => {
         if (task.id === id) {
           const elapsedMinutes = task.startTime 
             ? (Date.now() - task.startTime) / (60 * 1000)
-            : 0;
+            : task.elapsedTime;
           return {
             ...task,
             isRunning: false,
-            elapsedTime: task.elapsedTime + (elapsedMinutes)
+            elapsedTime: elapsedMinutes
           };
         }
         return task;
@@ -154,13 +178,17 @@ function Goal() {
     return getRemainingTime(task) <= 0;
   };
 
-  // Sort tasks by priority
+  // Sort tasks by priority and date
   const getSortedTasks = () => {
     const priorityOrder = { high: 0, medium: 1, low: 2 };
-    return [...tasks].sort((a, b) => {
-      if (a.completed !== b.completed) return a.completed ? 1 : -1;
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
-    });
+    const today = new Date().toLocaleDateString();
+    
+    return [...tasks]
+      .filter(task => new Date(task.createdAt).toLocaleDateString() === today)
+      .sort((a, b) => {
+        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        return priorityOrder[a.priority] - priorityOrder[b.priority];
+      });
   };
 
   return (
@@ -172,7 +200,7 @@ function Goal() {
         
         <div className="expanded-view">
             <div className="task-header">
-                <h2>Tasks</h2>
+                <h2>Today&apos;s Tasks</h2>
                 <span className={`task-stats ${todayStats.completed === todayStats.total && todayStats.total > 0 ? 'completed' : 'pending'}`}>
                     ({todayStats.completed}/{todayStats.total})
                 </span>
@@ -206,8 +234,8 @@ function Goal() {
             </div>
 
             <ul className="task-list">
-                {getSortedTasks().map((task, index) => (
-                    <li key={index} className={`${task.completed ? 'completed' : ''} priority-${task.priority}`}>
+                {getSortedTasks().map((task) => (
+                    <li key={task.id} className={`${task.completed ? 'completed' : ''} priority-${task.priority}`}>
                         <div className="task-content">
                             <input 
                                 type="checkbox"
@@ -245,9 +273,14 @@ function Goal() {
                                         </>
                                     )}
                                 </div>
+                                {task.completed && (
+                                    <div className="task-completion-time">
+                                        Completed at: {new Date(task.completedAt).toLocaleTimeString()}
+                                    </div>
+                                )}
                             </div>
                         </div>
-                        <button onClick={() => deleteTask(task.id)}><FaTrash color='white' /></button>
+                        <button onClick={() => deleteTask(task.id)}><FaTrash color="white" /></button>
                     </li>
                 ))}
             </ul>
