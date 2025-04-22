@@ -1,7 +1,7 @@
 .bottom {
   display: flex;
-  height: 2.8rem;
-  width: 20rem;
+  height: 3.1rem;
+  width: 27rem;
   background-color: rgba(1, 0, 10, 0.4);
   backdrop-filter: blur(5px);
   border-radius: 10px;
@@ -28,6 +28,7 @@
   flex-direction: column;
   align-items: center;
   transition-duration: 0.3s;
+  cursor: pointer;
 }
 
 .stats:hover {
@@ -35,4 +36,24 @@
   color: aqua;
   font-size: 2.5rem;
   margin-bottom: 20px;
+}
+
+.theme-button {
+  position: relative;
+}
+
+.theme-button::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background-color: aqua;
+  transition: width 0.3s ease;
+}
+
+.theme-button:hover::after {
+  width: 80%;
 }

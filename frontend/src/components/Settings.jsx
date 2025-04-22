@@ -25,7 +25,7 @@ export default function Settings() {
             <div className="alphaheader">
                 <div className="bar">
                     <span className="setting"> SETTING </span>
-                    <button onClick={() => navigate("/static")} className="x"> <CloseIcon /> </button>
+                    <button onClick={() => navigate("/")} className="x"> <CloseIcon /> </button>
                 </div>
                 
                 <div className="timeoptions">

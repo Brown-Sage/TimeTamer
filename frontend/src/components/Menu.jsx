@@ -5,10 +5,15 @@ import { MdWallpaper } from "react-icons/md";
 import { CiClock1 } from "react-icons/ci";
 import "../styles/Menu.css"
 import { useNavigate } from "react-router-dom";
-import  { openTimer } from "./Timer";
+import { openTimer } from "./Timer";
 
 export default function Menu() {
   const navigate = useNavigate();
+
+  const handleThemeClick = () => {
+    navigate("/theme");
+  };
+
   return (
     <div className="bottom">
       <div onClick={() => navigate("/stats")} className="stats">
@@ -20,7 +25,7 @@ export default function Menu() {
         <p>Track</p>
       </div>
       <div onClick={openTimer} className="stats">
-        <CiClock1  />
+        <CiClock1 />
         <p>Pomo</p>
       </div>
 
@@ -28,7 +33,7 @@ export default function Menu() {
         <RiGeminiFill />
         <p>AI</p>
       </div>
-      <div className="stats">
+      <div onClick={handleThemeClick} className="stats theme-button">
         <MdWallpaper />
         <p>Themes</p>
       </div>

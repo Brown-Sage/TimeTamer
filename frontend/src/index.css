@@ -1,0 +1,78 @@
+/* Global styles for background handling */
+:root {
+  --app-background: linear-gradient(to bottom right, #1e293b, #0f172a);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  width: 100%;
+}
+
+html {
+  /* Default background if none is selected */
+  background: var(--app-background);
+  background-attachment: fixed !important;
+  background-size: cover !important;
+  background-position: center !important;
+  min-height: 100vh;
+  height: 100%;
+}
+
+html.custom-background {
+  /* Ensure proper rendering for custom backgrounds */
+  background-repeat: no-repeat !important;
+}
+
+body {
+  /* Make body transparent to show html background */
+  background-color: transparent !important;
+  min-height: 100vh;
+  height: 100%;
+}
+
+/* Ensures the app container covers the full viewport */
+#root {
+  min-height: 100vh;
+  height: 100%;
+}
+
+/* Add custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Make sure all containers have correct transparency */
+.container, #root > div {
+  background-color: transparent !important;
+}
+
+/* Additional selectors to ensure background visibility */
+[data-reactroot], 
+.app-container, 
+.main-container {
+  background-color: transparent !important;
+}
+
+/* Force background to show on all browsers */
+@media all {
+  html {
+    background: var(--app-background) !important;
+    background-attachment: fixed !important;
+    background-size: cover !important;
+  }
+}
