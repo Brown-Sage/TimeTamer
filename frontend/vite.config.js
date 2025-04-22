@@ -57,6 +57,7 @@ export default defineConfig({
             },
           },
         ],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MB (or adjust as needed)
       },
     }),
   ],
