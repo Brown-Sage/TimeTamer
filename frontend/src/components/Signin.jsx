@@ -2,15 +2,16 @@ import React, { useState } from 'react'
 import '../styles/Signin.css' // Reusing the same CSS file
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import { env } from 'face-api.js'
 export default function SignIn() {
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
     const handleSubmit = () => {
-      console.log('register')
-      toast.error('Registration Failed :(')
-      
+        const base_url = import.meta.env.VITE_BASE_URL
+        console.log('register')
+
         const formData = new FormData()
 
         formData.append('email', email)
@@ -24,7 +25,7 @@ export default function SignIn() {
         }
 
         axios.defaults.baseURL = ''
-        axios.post('api/register/', formData, config).then((resp) => {
+        axios.post(`${base_url}/register`, formData, config).then((resp) => {
             console.log('REGISTER RESP', resp)
             toast.success('Registration Successful :)')
             window.location.href = '/login/'

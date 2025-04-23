@@ -9,6 +9,7 @@ export default function Login() {
     const [password, setPassword] = useState('')
 
     const handleSubmit = () => {
+        const base_url = import.meta.env.VITE_BASE_URL
         console.log('login')
         const formData = new FormData()
 
@@ -23,14 +24,20 @@ export default function Login() {
 
         axios.defaults.baseURL = ''
         axios
-            .post('api/login/', formData, config)
-            .then((resp) => {
-                console.log('login resp', resp)
-                toast.success('Login Successful :)')
+            .post(`${base_url}/login`, formData, config)
+            .then(({ data }) => {
+                console.log('login resp', data[0])
+                let resp = data[0]
                 window.localStorage.setItem('authenticated', true)
+                window.localStorage.setItem('username', resp.username)
+                window.localStorage.setItem('user_id', resp.id)
+
+                toast.success('Login Successful :)')
                 console.log(
                     'auth?',
-                    window.localStorage.getItem('authenticated')
+                    window.localStorage.getItem('authenticated'),
+                    window.localStorage.getItem('username'),
+                    window.localStorage.getItem('user_id')
                 )
 
                 window.location.href = `/${username}`

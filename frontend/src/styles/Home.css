@@ -103,3 +103,22 @@ html, body{
     height: rem;
 }
  
+.suggestions-box{
+    position: absolute;
+    top: 62%;
+    left: 50%;
+    border-radius: 30px;
+    border: 1px solid white;
+    transform: translate(-50%, -50%);
+    display: flex
+;
+    justify-content: space-around;
+    align-items: center;
+    width: 450px;
+    height: auto;
+    background-color: rgba(1, 0, 10, 0.4);
+    backdrop-filter: blur(5px);
+    /* font-size: 4rem; */
+    flex-direction: column;
+    padding: 12px;
+}
