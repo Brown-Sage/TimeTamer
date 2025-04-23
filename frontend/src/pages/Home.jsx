@@ -15,11 +15,14 @@ import Lottie from 'lottie-react'
 import SmallAnimations from '../components/SmallAnimations';
 import Goal from '../components/Goal'
 import '../styles/Goal.css'
+import Track from '../components/Track'
+import QuickNote from '../components/QuickNote'
 
 function Home() {
     const navigate = useNavigate()
     const { username } = useParams()
     const [user, sertUser] = useState()
+    const [suggestions, setSuggestions] = useState([])
     // const [authenticated, setAuthenticated] = useState(JSON.parse(window.localStorage.getItem('authenticated')))
     useEffect(() => {
         // let auth = JSON.parse(window.localStorage.getItem('authenticated'))
@@ -31,6 +34,7 @@ function Home() {
         if (username) {
             getUser()
         }
+        getSuggestions()
         // if (window.localStorage.getItem('authenticated') == 'true') {
         //     toast.success('logged in!!')
         // } else {
@@ -38,6 +42,21 @@ function Home() {
         // }
     }, [])
 
+    const getSuggestions = () => {
+        console.log('login')
+        const formData = new FormData()
+        formData.append('user', "4ffb4ce7-19fb-4049-a908-0ecc639c9916")
+        let user ="4ffb4ce7-19fb-4049-a908-0ecc639c9916"
+        let url = `https://n8n.aitech.work/webhook-test/pomodoro/suggestions?user=${user}`  
+        axios
+            .get(url)
+            .then((resp) => {
+                console.log("SUGGESTIONS RESP", resp)
+            })
+            .catch((err) => {
+                console.log('sugges err', err)
+            })
+    }
     const getUser = () => {
         console.log('get user data')
         axios
@@ -108,9 +127,16 @@ function Home() {
             <div className="spotify">
                 <SpotifyFrame playlistId="37i9dQZF1DXcBWIGoYBM5M" />
             </div>
+            <div><Track /></div>
             <div className="Maintimer">
                 <Timer />
             </div>
+            <div className="quick-note">
+                <QuickNote />
+            </div>
+            <div>{suggestions && <>
+                
+            </>}</div>
             <TimeProgress />
             <Menu />
             <SmallAnimations />
