@@ -61,7 +61,7 @@ function Goal() {
       });
     }, 1000);
 
-    return () => clearInterval(interval);
+    return () => clearInterval(interval); 
   }, [tasks, settings.alarm]);
 
   // Update stats whenever tasks change
