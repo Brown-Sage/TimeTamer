@@ -15,7 +15,7 @@ import Lottie from 'lottie-react'
 import SmallAnimations from '../components/SmallAnimations'
 import Goal from '../components/Goal'
 import '../styles/Goal.css'
-// import Track from '../components/'
+import Track from '../components/Track'
 import QuickNote from '../components/QuickNote'
 import parse from 'html-react-parser'
 
@@ -164,15 +164,15 @@ function Home() {
                 </div>
                 <div className="header-right"></div>
             </div>
+            {/* <div className="track-section">
+                <Track />
+            </div> */}
             <div className="mid">
                 <Goal />
             </div>
             <div className="spotify">
                 <SpotifyFrame playlistId="37i9dQZF1DXcBWIGoYBM5M" />
             </div>
-            {/* <div>
-                <Track />
-            </div> */}
             {suggestions ? (
                 <div className="suggestions-box">
                     {!acitvityInfo ? (

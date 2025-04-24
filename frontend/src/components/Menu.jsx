@@ -6,6 +6,7 @@ import { CiClock1 } from "react-icons/ci";
 import "../styles/Menu.css"
 import { useNavigate } from "react-router-dom";
 import { openTimer } from "./Timer";
+import Track from "./Track";
 
 export default function Menu() {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ export default function Menu() {
         <LuListTodo />
         <p>Stats</p>
       </div>
-      <div className="stats">
+      <div onClick={() => navigate("/Track")} className="stats">
         <MdQueryStats />
         <p>Track</p>
       </div>
@@ -29,10 +30,10 @@ export default function Menu() {
         <p>Pomo</p>
       </div>
 
-      <div className="stats">
+      {/* <div className="stats">
         <RiGeminiFill />
         <p>AI</p>
-      </div>
+      </div> */}
       <div onClick={handleThemeClick} className="stats theme-button">
         <MdWallpaper />
         <p>Themes</p>

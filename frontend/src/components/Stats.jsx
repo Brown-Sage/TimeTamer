@@ -13,7 +13,6 @@ import starAnimation from "../assets/animations/star.json";
 import runnerAnimation from "../assets/animations/runner.json";
 import plantAnimation from "../assets/animations/plant.json";
 import { useEffect, useState } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const Container = styled("div")({
   backgroundColor: "rgba(26, 26, 26, 0.95)",
@@ -158,20 +157,10 @@ const LottieWrapper = styled('div')({
   marginTop: "-4px"
 });
 
-const GraphCard = styled(Card)({
-    backgroundColor: "rgba(44, 44, 44, 0.8)",
-    color: "#fff",
-    padding: "24px",
-    borderRadius: "16px",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    marginBottom: "32px",
-    height: "300px",
-});
-
 function Stats() {
-  const [currentStreak, setCurrentStreak] = useState(0);
-  const [bestRecord, setBestRecord] = useState(0);
-  const [productiveDays, setProductiveDays] = useState(0);
+  const [currentStreak, setCurrentStreak] = useState(2);
+  const [bestRecord, setBestRecord] = useState(4);
+  const [productiveDays, setProductiveDays] = useState(9);
   const [lastStreakUpdate, setLastStreakUpdate] = useState("");
   const [completedFocusSessions, setCompletedFocusSessions] = useState(false);
 
@@ -231,7 +220,7 @@ function Stats() {
         });
         setLastStreakUpdate(today);
       } else {
-        setCurrentStreak(0);
+        setCurrentStreak(2);
         setLastStreakUpdate(today);
       }
       setCompletedFocusSessions(false);
@@ -501,76 +490,6 @@ function Stats() {
           </Typography>
         </StatCard>
       </StatsGrid>
-
-      <GraphCard>
-        <Typography variant="h6" style={{ 
-          marginBottom: "16px",
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          color: "#4CAF50"
-        }}>
-          Daily Focus Time (minutes)
-        </Typography>
-        <ResponsiveContainer width="100%" height="80%">
-          <LineChart
-            data={focusTimeData}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-          >
-            <CartesianGrid 
-              strokeDasharray="3 3" 
-              stroke="rgba(255, 255, 255, 0.2)"
-              vertical={false}
-            />
-            <XAxis 
-              dataKey="date" 
-              stroke="#fff"
-              tick={{ fill: '#fff', fontSize: 12 }}
-              axisLine={{ stroke: '#fff' }}
-            />
-            <YAxis 
-              stroke="#fff"
-              tick={{ fill: '#fff', fontSize: 12 }}
-              axisLine={{ stroke: '#fff' }}
-              label={{ 
-                value: 'Minutes', 
-                angle: -90, 
-                position: 'insideLeft',
-                fill: '#fff',
-                style: { fontSize: 12 }
-              }}
-            />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: 'rgba(44, 44, 44, 0.95)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                color: '#fff',
-                fontSize: '14px'
-              }}
-              formatter={(value) => [`${value} minutes`, 'Focus Time']}
-              cursor={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="time" 
-              stroke="#4CAF50" 
-              strokeWidth={3}
-              dot={{ 
-                fill: '#4CAF50', 
-                stroke: '#fff',
-                strokeWidth: 2,
-                r: 6
-              }}
-              activeDot={{ 
-                r: 8,
-                fill: '#fff',
-                stroke: '#4CAF50',
-                strokeWidth: 2
-              }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </GraphCard>
 
       <DayProgressCard>
         <Typography variant="h5" style={{ 

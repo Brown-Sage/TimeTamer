@@ -20,7 +20,7 @@
 /* Expanded state */
 .task-manager.expanded {
     position: fixed;
-    top: 100px;
+    top: 60px;
     width: 360px;
     height: auto;
     min-height: 200px;

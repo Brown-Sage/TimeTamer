@@ -5,9 +5,10 @@ import "../styles/Timer.css";
 import alarmsound from "../assets/mixkit-clear-announce-tones-2861.wav";
 import WebcamDetector from "./WebcamDetector";
 import "../styles/WebcamDetector.css";
-import axios from "axios";
+import PropTypes from "prop-types";
 
-function Timer() {
+function Timer(props) {
+    const { getSuggestions } = props
     const [timerSettings, setTimerSettings] = useState({
         focus: { minutes: 50, seconds: 0 },
         break: { minutes: 5, seconds: 0 },
@@ -39,9 +40,79 @@ function Timer() {
         webcamDetection: localStorage.getItem('timerWebcamDetection') === 'true'
     });
     const [isUserPresent, setIsUserPresent] = useState(true);
+    const [webcamEnabled, setWebcamEnabled] = useState(false);
+    const prevUserPresenceRef = useRef(true);
+    const timerIntervalRef = useRef(null);
+
+    // Load saved settings from localStorage on initial mount
+    useEffect(() => {
+        const savedSettings = localStorage.getItem('timerSettings');
+        if (savedSettings) {
+            const parsedSettings = JSON.parse(savedSettings);
+            setTimerSettings(parsedSettings);
+            setMinutes(parsedSettings[mode].minutes);
+        }
+
+        // Auto-enable webcam if the setting is enabled
+        if (settings.webcamDetection) {
+            setWebcamEnabled(true);
+        }
+    }, []);
+
+    // Update webcamEnabled when webcam detection setting changes
+    useEffect(() => {
+        setWebcamEnabled(settings.webcamDetection);
+    }, [settings.webcamDetection]);
 
     const startStop = () => {
         setIsRunning((prev) => !prev);
+    };
+
+    // Handle user presence changes (from webcam detection)
+    const handleUserPresenceChange = (present) => {
+        console.log('User presence changed:', present, 'Previous state:', isUserPresent);
+        
+        // Check if timer was paused due to user absence
+        const wasPaused = !isRunning && !isUserPresent;
+        
+        // Update user presence state
+        setIsUserPresent(present);
+        
+        // Store previous state
+        prevUserPresenceRef.current = present;
+        
+        if (present && settings.webcamDetection) {
+            // User is present - resume timer if it was paused due to absence
+            if (wasPaused) {
+                console.log('User returned and timer was paused - resuming timer');
+                // Force timer to resume
+                setTimeout(() => {
+                    setIsRunning(true);
+                }, 100);
+            }
+        } else if (!present && settings.webcamDetection && isRunning) {
+            // User is not present - pause timer
+            console.log('User not present, pausing timer');
+            setIsRunning(false);
+        }
+    };
+
+    // Handle timer settings changes
+    const handleSettingChange = (setting) => {
+        setSettings(prev => {
+            const newSettings = {
+                ...prev,
+                [setting]: !prev[setting]
+            };
+            
+            // If webcam detection is toggled on, enable the webcam
+            if (setting === 'webcamDetection' && !prev.webcamDetection) {
+                setWebcamEnabled(true);
+            }
+            
+            localStorage.setItem(`timer${setting.charAt(0).toUpperCase() + setting.slice(1)}`, newSettings[setting]);
+            return newSettings;
+        });
     };
 
     const handleTimeClick = (field) => {
@@ -94,20 +165,11 @@ function Timer() {
         }
         setEditingField(null);
     };
+
     const TrackFocus = () => {
         const focusTime = focusCount == 0 ? focus.minutes : focusCount * focus.minutes;
         return focusTime
     }
-
-    useEffect(() => {
-        // Load saved settings from localStorage
-        const savedSettings = localStorage.getItem('timerSettings');
-        if (savedSettings) {
-            const settings = JSON.parse(savedSettings);
-            setTimerSettings(settings);
-            setMinutes(settings[mode].minutes);
-        }
-    }, []);
 
     useEffect(() => {
         const today = new Date().toLocaleDateString();
@@ -157,6 +219,7 @@ function Timer() {
         let interval;
         if (isRunning) {
             if (isUserPresent || !settings.webcamDetection) {
+                // Store the interval reference to allow clearing it
                 interval = setInterval(() => {
                     setSeconds((prevSeconds) => {
                         if (prevSeconds === 0) { 
@@ -210,11 +273,25 @@ function Timer() {
                         return prevSeconds - 1;
                     });
                 }, 1000);
+                timerIntervalRef.current = interval;
+            } else {
+                // If user is not present and webcam detection is enabled, don't start the timer
+                console.log("Timer not running - user not detected");
             }
         } else {
             clearInterval(interval);
+            if (timerIntervalRef.current) {
+                clearInterval(timerIntervalRef.current);
+                timerIntervalRef.current = null;
+            }
         }
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+            if (timerIntervalRef.current) {
+                clearInterval(timerIntervalRef.current);
+                timerIntervalRef.current = null;
+            }
+        };
     }, [isRunning, minutes, seconds, hours, mode, focusCount, settings.alarm, isUserPresent, settings.webcamDetection, timerSettings.focus.minutes]);
 
     const handleFocus = () => {
@@ -229,6 +306,7 @@ function Timer() {
         setMode('break');
         setMinutes(timerSettings.break.minutes);
         setSeconds(0);
+        getSuggestions(timerSettings.break.minutes)
     };
 
     const handleLongBreak = () => {
@@ -236,7 +314,7 @@ function Timer() {
         setMode('longbreak');
         setMinutes(timerSettings.longbreak.minutes);
         setSeconds(0);
-        getSuggestions()
+        getSuggestions(timerSettings.longbreak.minutes)
     };
     const playaudio = () =>{
         const audio = new Audio(alarmsound)
@@ -245,49 +323,9 @@ function Timer() {
         });
     };
     
-     const getSuggestions = () => {
-        console.log('login')
-        const formData = new FormData()
-        formData.append('user', "4ffb4ce7-19fb-4049-a908-0ecc639c9916")
-        let user ="4ffb4ce7-19fb-4049-a908-0ecc639c9916"
-        let url = `https://n8n.aitech.work/webhook-test/pomodoro/suggestions?user=${user}`
-         
-        axios
-            .get(url)
-            .then((resp) => {
-                console.log("SUGGESTIONS RESP", resp)
-            })
-            .catch((err) => {
-                console.log('sugges err', err)
-            })
-    }
 
     const toggleSettings = () => {
         setShowSettings(!showSettings);
-    };
-
-    const handleUserPresenceChange = (present) => {
-        console.log('User presence changed:', present);
-        setIsUserPresent(present);
-        
-        if (!present && settings.webcamDetection) {
-            // Pause the timer if a user is not detected.
-            if (isRunning) {
-                setIsRunning(false);
-            }
-        }
-        // No auto-resume when face is detected.
-    };
-
-    const handleSettingChange = (setting) => {
-        setSettings(prev => {
-            const newSettings = {
-                ...prev,
-                [setting]: !prev[setting]
-            };
-            localStorage.setItem(`timer${setting.charAt(0).toUpperCase() + setting.slice(1)}`, newSettings[setting]);
-            return newSettings;
-        });
     };
 
     const closeTimer = () => {
@@ -301,6 +339,14 @@ function Timer() {
                 <button className="timer-control-btn" onClick={toggleSettings}>
                     <IoSettingsSharp size={18} />
                 </button>
+                
+                {settings.webcamDetection && (
+                    <WebcamDetector 
+                        onUserPresenceChange={handleUserPresenceChange} 
+                        isEnabled={webcamEnabled}
+                    />
+                )}
+                
                 <button className="timer-control-btn" onClick={closeTimer}>
                     <IoClose size={18} />
                 </button>
@@ -308,6 +354,7 @@ function Timer() {
 
             {showSettings && (
                 <div className="timer-settings-menu">
+                    <h3 className="settings-title">Timer Settings</h3>
                     <div className="settings-option">
                         <input
                             type="checkbox"
@@ -336,10 +383,6 @@ function Timer() {
                         <label htmlFor="webcamDetection">Enable webcam detection</label>
                     </div>
                 </div>
-            )}
-
-            {settings.webcamDetection && (
-                <WebcamDetector onUserPresenceChange={handleUserPresenceChange} />
             )}
 
             {settings.webcamDetection && !isUserPresent && (
@@ -422,6 +465,11 @@ function Timer() {
         </div>
     );
 }
+
+Timer.propTypes = {
+    getSuggestions: PropTypes.func.isRequired
+};
+
 export const openTimer = () =>{
     document.querySelector('.Maintimer').style.display = 'flex';
 }

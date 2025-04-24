@@ -12,6 +12,7 @@ import Settings from './components/Settings'
 import Stats from './components/Stats'
 import Theme from './components/Theme'
 import { useState, useEffect } from 'react'
+import Track from './components/Track'
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Enhanced function to load the saved background with error handling
@@ -159,6 +160,7 @@ function AppContent() {
                 <Route path="/signin" element={<SignIn />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/stats" element={<Stats />} />
+                <Route path="/track" element={<Track/>} />
             </Routes>
 
             {showTheme && <Theme />}

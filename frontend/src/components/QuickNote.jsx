@@ -123,7 +123,7 @@ export default function QuickNote() {
     }
   };
 
-  return (
+    return (
     <div className="quick-note-container">
       {!isOpen ? (
         <button className="quick-note-toggle" onClick={toggleNotes}>

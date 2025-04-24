@@ -12,7 +12,7 @@ export default function SmallAnimations() {
                     loop={true} 
                     autoplay={true}
                 />
-                100
+                200
             </div>
         
             <div className="streak">
@@ -21,7 +21,7 @@ export default function SmallAnimations() {
                     loop={true} 
                     autoplay={true}
                 />
-                0
+                2
             </div>
             <div className="idea">
                 <Lottie 
