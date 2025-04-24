@@ -127,6 +127,8 @@ function Home() {
                 console.log('logout resp', resp)
                 toast.success('logout successful :)')
                 window.localStorage.removeItem('authenticated')
+                window.localStorage.removeItem('username')
+                window.localStorage.removeItem('user_id')
                 window.location.href = `/`
             })
             .catch((err) => {
