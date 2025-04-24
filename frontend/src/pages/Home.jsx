@@ -153,7 +153,11 @@ function Home() {
                     {username &&
                     window.localStorage.getItem('authenticated') == 'true' ? (
                         <div>
-                            {user && <div>{`Hey! ${user.username}`}</div>}
+                            {user && (
+                                <div>{`Hey! ${window.localStorage.getItem(
+                                    'username'
+                                )}`}</div>
+                            )}
                             <button onClick={() => handleLogout()}>
                                 logout
                             </button>
