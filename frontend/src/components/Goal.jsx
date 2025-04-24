@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { IoMdAdd } from 'react-icons/io';
 import { FaTrash } from 'react-icons/fa';
 import '../styles/Goal.css';
+import alarmsound from "../assets/mixkit-clear-announce-tones-2861.wav";
 
 function Goal() {
   // Initialize tasks from localStorage
@@ -15,6 +16,10 @@ function Goal() {
   const [taskDuration, setTaskDuration] = useState('');
   const [taskPriority, setTaskPriority] = useState('medium');
   const [, setTimerUpdate] = useState(0);
+  const [settings, setSettings] = useState({
+    alarm: localStorage.getItem('goalAlarm') === 'true' || true, // Default to true if not set
+  });
+  const [showSettings, setShowSettings] = useState(false);
 
   // Save tasks to localStorage whenever they change
   useEffect(() => {
@@ -36,6 +41,18 @@ function Goal() {
             const elapsedMinutes = task.startTime 
               ? (Date.now() - task.startTime) / (60 * 1000)
               : task.elapsedTime;
+              
+            // Check if timer has just finished
+            if (task.duration > 0 && task.duration - elapsedMinutes <= 0) {
+              // Play alarm sound when timer finishes
+              if (settings.alarm) playaudio();
+              return { 
+                ...task, 
+                isRunning: false, 
+                elapsedTime: task.duration 
+              };
+            }
+            
             return { ...task, elapsedTime: elapsedMinutes };
           }
           return task;
@@ -45,7 +62,7 @@ function Goal() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [tasks]);
+  }, [tasks, settings.alarm]);
 
   // Update stats whenever tasks change
   const updateTodayStats = (currentTasks) => {
@@ -106,17 +123,27 @@ function Goal() {
   // Toggle task completion status
   const toggleTaskCompletion = (id) => {
     setTasks(prevTasks =>
-      prevTasks.map(task =>
-        task.id === id ? { 
-          ...task, 
-          completed: !task.completed,
-          completedAt: !task.completed ? new Date().toISOString() : null,
-          isRunning: false, // Stop the timer if it was running
-          elapsedTime: task.isRunning ? 
-            (Date.now() - task.startTime) / (60 * 1000) : 
-            task.elapsedTime
-        } : task
-      )
+      prevTasks.map(task => {
+        if (task.id === id) {
+          const wasRunning = task.isRunning;
+          
+          // If task is being completed and was running with a timer, play alarm sound
+          if (!task.completed && wasRunning && settings.alarm) {
+            playaudio();
+          }
+          
+          return { 
+            ...task, 
+            completed: !task.completed,
+            completedAt: !task.completed ? new Date().toISOString() : null,
+            isRunning: false, // Stop the timer if it was running
+            elapsedTime: task.isRunning ? 
+              (Date.now() - task.startTime) / (60 * 1000) : 
+              task.elapsedTime
+          };
+        }
+        return task;
+      })
     );
   };
 
@@ -178,6 +205,14 @@ function Goal() {
     return getRemainingTime(task) <= 0;
   };
 
+  // Play alarm sound
+  const playaudio = () => {
+    const audio = new Audio(alarmsound);
+    audio.play().catch((error) => {
+      console.error('Failed to play audio:', error);
+    });
+  };
+
   // Sort tasks by priority and date
   const getSortedTasks = () => {
     const priorityOrder = { high: 0, medium: 1, low: 2 };
@@ -189,6 +224,24 @@ function Goal() {
         if (a.completed !== b.completed) return a.completed ? 1 : -1;
         return priorityOrder[a.priority] - priorityOrder[b.priority];
       });
+  };
+
+  // Handle setting change
+  const handleSettingChange = (setting) => {
+    setSettings(prev => {
+      const newSettings = {
+        ...prev,
+        [setting]: !prev[setting]
+      };
+      
+      localStorage.setItem(`goal${setting.charAt(0).toUpperCase() + setting.slice(1)}`, newSettings[setting]);
+      return newSettings;
+    });
+  };
+
+  // Toggle settings panel
+  const toggleSettings = () => {
+    setShowSettings(!showSettings);
   };
 
   return (
@@ -204,7 +257,25 @@ function Goal() {
                 <span className={`task-stats ${todayStats.completed === todayStats.total && todayStats.total > 0 ? 'completed' : 'pending'}`}>
                     ({todayStats.completed}/{todayStats.total})
                 </span>
+                <button className="settings-button" onClick={(e) => { e.stopPropagation(); toggleSettings(); }}>
+                    ⚙️
+                </button>
             </div>
+            
+            {showSettings && (
+                <div className="task-settings-menu">
+                    <h3 className="settings-title">Task Settings</h3>
+                    <div className="settings-option">
+                        <input
+                            type="checkbox"
+                            id="goal-alarm"
+                            checked={settings.alarm}
+                            onChange={() => handleSettingChange('alarm')}
+                        />
+                        <label htmlFor="goal-alarm">Enable alarm sound</label>
+                    </div>
+                </div>
+            )}
             
             <div className="add-task">
                 <input

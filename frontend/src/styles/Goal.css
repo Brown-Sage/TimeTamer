@@ -67,8 +67,6 @@
 .task-header {
     position: sticky;
     top: 0;
-   
-   
     z-index: 1;
     padding: 10px 0;
     display: flex;
@@ -76,6 +74,7 @@
     gap: 10px;
     margin-bottom: 1rem;
     flex-shrink: 0; /* Prevent these elements from shrinking */
+    justify-content: space-between;
 }
 
 .task-header h2 {
@@ -221,6 +220,51 @@
 
 .timer-button:hover {
     opacity: 0.9;
+}
+
+/* Settings button and menu */
+.settings-button {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: white;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.settings-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.task-settings-menu {
+    background: rgba(20, 20, 30, 0.95);
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings-title {
+    color: white;
+    font-size: 1rem;
+    margin-top: 0;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 5px;
+}
+
+.settings-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    color: white;
+}
+
+.settings-option input[type="checkbox"] {
+    accent-color: #4CAF50;
 }
 
 /* Task list container with scroll */
