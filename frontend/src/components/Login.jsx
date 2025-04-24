@@ -46,6 +46,7 @@ export default function Login() {
                 console.log('login err', err)
 
                 window.localStorage.setItem('authenticated', false)
+                toast.error('Invalid Credentials!')
                 // window.location.href = `/`
             })
     }
