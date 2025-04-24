@@ -129,10 +129,15 @@ function Home() {
                 window.localStorage.removeItem('authenticated')
                 window.localStorage.removeItem('username')
                 window.localStorage.removeItem('user_id')
-                window.location.href = `/`
+                window.location = '/'
             })
             .catch((err) => {
                 console.log('logout err', err)
+                toast.success('logout successful :)')
+                window.localStorage.removeItem('authenticated')
+                window.localStorage.removeItem('username')
+                window.localStorage.removeItem('user_id')
+                window.location = '/'
                 // window.location.reload
             })
     }
