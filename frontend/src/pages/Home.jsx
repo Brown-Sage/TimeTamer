@@ -18,6 +18,7 @@ import '../styles/Goal.css'
 import Track from '../components/Track'
 import QuickNote from '../components/QuickNote'
 import parse from 'html-react-parser'
+import { color } from '@mui/system'
 
 function Home() {
     const navigate = useNavigate()

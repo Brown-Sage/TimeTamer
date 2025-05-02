@@ -470,8 +470,6 @@ Timer.propTypes = {
     getSuggestions: PropTypes.func.isRequired
 };
 
-export const openTimer = () =>{
-    document.querySelector('.Maintimer').style.display = 'flex';
-}
+
 
 export default Timer;
