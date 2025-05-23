@@ -2,40 +2,36 @@ import { useNavigate, useParams } from 'react-router-dom'
 import '../styles/Home.css'
 import Timer from '../components/Timer'
 import '../styles/Timer.css'
-import { MdImportExport, MdOutlineMenuOpen } from 'react-icons/md'
+// import { MdImportExport, MdOutlineMenuOpen } from 'react-icons/md'
 import Menu from '../components/Menu'
 import SpotifyFrame from '../components/SpotifyFrame'
 import '../styles/SpotifyFrame.css'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import axios from 'axios'
-import Settings from '../components/Settings'
+// import Settings from '../components/Settings'
 import TimeProgress from '../components/TimeProgress'
-import Lottie from 'lottie-react'
+// import Lottie from 'lottie-react'
 import SmallAnimations from '../components/SmallAnimations'
 import Goal from '../components/Goal'
 import '../styles/Goal.css'
-import Track from '../components/Track'
+// import Track from '../components/Track'
 import QuickNote from '../components/QuickNote'
-import parse from 'html-react-parser'
-import { color } from '@mui/system'
+// import parse from 'html-react-parser'
+// import { color } from '@mui/system'
 
 function Home() {
     const navigate = useNavigate()
     const { username } = useParams()
     const [user, sertUser] = useState()
-    const [suggestions, setSuggestions] = useState(null)
-    const [acitvityInfo, setAcitvityInfo] = useState(null)
-    // const [authenticated, setAuthenticated] = useState(JSON.parse(window.localStorage.getItem('authenticated')))
+    // const [suggestions, setSuggestions] = useState(null)
+    // const [acitvityInfo, setAcitvityInfo] = useState(null)
+
     useEffect(() => {
-        // let auth = JSON.parse(window.localStorage.getItem('authenticated'))
         console.log(
             'auth?',
             window.localStorage.getItem('authenticated')
-            // typeof auth
         )
-        const items = { ...localStorage }
-        // console.log('{ALL LOCALSTORAGE ITEMS', items)
 
         if (username) {
             const base_url = import.meta.env.VITE_BASE_URL
@@ -43,70 +39,55 @@ function Home() {
             console.log('userid', user_id)
             getUser(base_url, user_id)
         }
-        // if (window.localStorage.getItem('authenticated') == 'true') {
-        //     toast.success('logged in!!')
-        // } else {
-        //     toast.error(':(')
-        // }
     }, [])
-    const getSuggestions = (mins) => {
-        console.log('GETTING SUGGESTIONS')
 
-        let base_url = import.meta.env.VITE_BASE_URL
-        let user_id = localStorage.getItem('user_id')
-        if (base_url && user_id) {
-            let url = `${base_url}/suggestions?user_id=${user_id}`
-            axios
-                .get(url)
-                .then(({ data }) => {
-                    console.log('SUGGESTIONS RESP', data)
-                    let sugg = JSON.parse(data[0]?.text)
-                    console.log('SUGGESTIONS FETCH', sugg)
-                    setAcitvityInfo(null)
-                    setSuggestions(sugg)
-                })
-                .catch((err) => {
-                    console.log('sugges err', err)
-                })
-        } else {
-            let data = [
-                {
-                    text: '["Take a short walk outside", "Do some light stretching exercises", "Practice deep breathing techniques", "Listen to calming music", "Read a funny article"]',
-                },
-            ]
-            let sugg = JSON.parse(data[0]?.text)
-            console.log('SUGGESTIONS FETCH', sugg)
-            setSuggestions(sugg)
-        }
-    }
+    // const getSuggestions = (mins) => {
+    //     console.log('GETTING SUGGESTIONS')
 
-    const getActivityInfo = (activity) => {
-        let base_url = import.meta.env.VITE_BASE_URL
-        console.log('ACTIVITY SELECTED:', activity)
-        axios.defaults.baseURL = ''
-        axios
-            .get(`${base_url}/activity-info?acitvity=${activity}`)
-            .then(({ data }) => {
-                console.log('ACTIVITY INFO:', data)
-                let htmlString = data[0]?.text
-                setAcitvityInfo(htmlString)
-            })
-            .catch((e) => {
-                console.log('ACTIVITY ERR', e)
-            })
-    }
+    //     let base_url = import.meta.env.VITE_BASE_URL
+    //     let user_id = localStorage.getItem('user_id')
+    //     if (base_url && user_id) {
+    //         let url = `${base_url}/suggestions?user_id=${user_id}`
+    //         axios
+    //             .get(url)
+    //             .then(({ data }) => {
+    //                 console.log('SUGGESTIONS RESP', data)
+    //                 let sugg = JSON.parse(data[0]?.text)
+    //                 console.log('SUGGESTIONS FETCH', sugg)
+    //                 setAcitvityInfo(null)
+    //                 setSuggestions(sugg)
+    //             })
+    //             .catch((err) => {
+    //                 console.log('sugges err', err)
+    //             })
+    //     } else {
+    //         let data = [
+    //             {
+    //                 text: '["Take a short walk outside", "Do some light stretching exercises", "Practice deep breathing techniques", "Listen to calming music", "Read a funny article"]',
+    //             },
+    //         ]
+    //         let sugg = JSON.parse(data[0]?.text)
+    //         console.log('SUGGESTIONS FETCH', sugg)
+    //         setSuggestions(sugg)
+    //     }
+    // }
 
-    // const getSuggestions = (base_url, user_id) => {
-    //     let url = `${base_url}/suggestions?user_id=${user_id}`
+    // const getActivityInfo = (activity) => {
+    //     let base_url = import.meta.env.VITE_BASE_URL
+    //     console.log('ACTIVITY SELECTED:', activity)
+    //     axios.defaults.baseURL = ''
     //     axios
-    //         .get(url)
-    //         .then((resp) => {
-    //             console.log('SUGGESTIONS RESP', resp)
+    //         .get(`${base_url}/activity-info?acitvity=${activity}`)
+    //         .then(({ data }) => {
+    //             console.log('ACTIVITY INFO:', data)
+    //             let htmlString = data[0]?.text
+    //             setAcitvityInfo(htmlString)
     //         })
-    //         .catch((err) => {
-    //             console.log('sugges err', err)
+    //         .catch((e) => {
+    //             console.log('ACTIVITY ERR', e)
     //         })
     // }
+
     const getUser = (base_url, user_id) => {
         console.log('get user data')
         axios
@@ -139,7 +120,6 @@ function Home() {
                 window.localStorage.removeItem('username')
                 window.localStorage.removeItem('user_id')
                 window.location = '/'
-                // window.location.reload
             })
     }
 
@@ -147,10 +127,6 @@ function Home() {
         <div className="container">
             <div className="MainHead">
                 <div className="header-left">
-                    {/* <button onClick={() => navigate("/settings")}>
-                        <MdOutlineMenuOpen color="white" fontSize={30} />
-                    </button> */}
-
                     {username &&
                     window.localStorage.getItem('authenticated') == 'true' ? (
                         <div>
@@ -176,16 +152,13 @@ function Home() {
                 </div>
                 <div className="header-right"></div>
             </div>
-            {/* <div className="track-section">
-                <Track />
-            </div> */}
             <div className="mid">
                 <Goal />
             </div>
             <div className="spotify">
                 <SpotifyFrame playlistId="37i9dQZF1DXcBWIGoYBM5M" />
             </div>
-            {suggestions ? (
+            {/* {suggestions ? (
                 <div className="suggestions-box">
                     {!acitvityInfo ? (
                         <>
@@ -251,14 +224,13 @@ function Home() {
                         </>
                     )}
                 </div>
-            ) : null}
+            ) : null} */}
             <div className="Maintimer">
-                <Timer getSuggestions={getSuggestions} />
+                <Timer />
             </div>
             <div className="quick-note">
                 <QuickNote />
             </div>
-            <div>{suggestions && <></>}</div>
             <TimeProgress />
             <Menu />
             <SmallAnimations />

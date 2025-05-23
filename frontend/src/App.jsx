@@ -13,6 +13,7 @@ import Stats from './components/Stats'
 import Theme from './components/Theme'
 import { useState, useEffect } from 'react'
 import Track from './components/Track'
+import { TimerProvider } from './context/TimerContext'
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Enhanced function to load the saved background with error handling
@@ -202,9 +203,11 @@ function App() {
     }, [])
 
     return (
-        <Router>
-            <AppContent />
-        </Router>
+        <TimerProvider>
+            <Router>
+                <AppContent />
+            </Router>
+        </TimerProvider>
     )
 }
 

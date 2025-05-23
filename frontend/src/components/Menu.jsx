@@ -11,7 +11,11 @@ import Track from "./Track";
 export default function Menu() {
   const navigate = useNavigate();
   const openTimer = () =>{
-    document.querySelector('.Maintimer').style.display = 'flex';
+    if(document.querySelector('.Maintimer').style.display === 'flex'){
+      document.querySelector('.Maintimer').style.display = 'none';
+    }else{
+      document.querySelector('.Maintimer').style.display = 'flex';
+    }
 }
 
   const handleThemeClick = () => {

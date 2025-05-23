@@ -158,10 +158,19 @@ const LottieWrapper = styled('div')({
 });
 
 function Stats() {
-  const [currentStreak, setCurrentStreak] = useState(2);
-  const [bestRecord, setBestRecord] = useState(4);
-  const [productiveDays, setProductiveDays] = useState(9);
-  const [lastStreakUpdate, setLastStreakUpdate] = useState("");
+  // Clear existing localStorage data on mount
+  useEffect(() => {
+    localStorage.removeItem('currentStreak');
+    localStorage.removeItem('bestRecord');
+    localStorage.removeItem('productiveDays');
+    localStorage.removeItem('lastStreakUpdate');
+    localStorage.removeItem('completedFocusSessions');
+  }, []);
+
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [bestRecord, setBestRecord] = useState(0);
+  const [productiveDays, setProductiveDays] = useState(0);
+  const [lastStreakUpdate, setLastStreakUpdate] = useState(new Date().toLocaleDateString());
   const [completedFocusSessions, setCompletedFocusSessions] = useState(false);
 
   // Add state for focus time data with initial test data
@@ -183,20 +192,20 @@ function Stats() {
     return last7Days;
   });
 
-  // Load data from local storage
-  useEffect(() => {
-    const savedStreak = localStorage.getItem("currentStreak");
-    const savedBestRecord = localStorage.getItem("bestRecord");
-    const savedProductiveDays = localStorage.getItem("productiveDays");
-    const savedLastStreakUpdate = localStorage.getItem("lastStreakUpdate");
-    const savedCompletedSessions = localStorage.getItem("completedFocusSessions");
+  // Load data from local storage - REMOVED this effect since we want to start fresh
+  // useEffect(() => {
+  //   const savedStreak = localStorage.getItem("currentStreak");
+  //   const savedBestRecord = localStorage.getItem("bestRecord");
+  //   const savedProductiveDays = localStorage.getItem("productiveDays");
+  //   const savedLastStreakUpdate = localStorage.getItem("lastStreakUpdate");
+  //   const savedCompletedSessions = localStorage.getItem("completedFocusSessions");
 
-    if (savedStreak) setCurrentStreak(parseInt(savedStreak, 10));
-    if (savedBestRecord) setBestRecord(parseInt(savedBestRecord, 10));
-    if (savedProductiveDays) setProductiveDays(parseInt(savedProductiveDays, 10));
-    if (savedLastStreakUpdate) setLastStreakUpdate(savedLastStreakUpdate);
-    if (savedCompletedSessions) setCompletedFocusSessions(savedCompletedSessions === 'true');
-  }, []);
+  //   if (savedStreak) setCurrentStreak(parseInt(savedStreak, 10));
+  //   if (savedBestRecord) setBestRecord(parseInt(savedBestRecord, 10));
+  //   if (savedProductiveDays) setProductiveDays(parseInt(savedProductiveDays, 10));
+  //   if (savedLastStreakUpdate) setLastStreakUpdate(savedLastStreakUpdate);
+  //   if (savedCompletedSessions) setCompletedFocusSessions(savedCompletedSessions === 'true');
+  // }, []);
   
   // Update data in local storage
   useEffect(() => {
@@ -214,15 +223,17 @@ function Stats() {
       if (completedFocusSessions) {
         setCurrentStreak(prev => {
           const newStreak = prev + 1;
+          // Only update best record if new streak is higher
           setBestRecord(prevBest => Math.max(prevBest, newStreak));
+          // Only increment productive days if we completed sessions
           setProductiveDays(prevDays => prevDays + 1);
           return newStreak;
         });
-        setLastStreakUpdate(today);
       } else {
-        setCurrentStreak(2);
-        setLastStreakUpdate(today);
+        // Reset streak to 0 if no sessions completed
+        setCurrentStreak(0);
       }
+      setLastStreakUpdate(today);
       setCompletedFocusSessions(false);
     }
   }, [lastStreakUpdate, completedFocusSessions]);
@@ -280,6 +291,8 @@ function Stats() {
       console.log('Focus session completed event received with data:', event.detail);
       setCompletedFocusSessions(true);
       const today = new Date().toLocaleDateString();
+      
+      // Only update streak if it's a new day
       if (lastStreakUpdate !== today) {
         setCurrentStreak(prev => {
           const newStreak = prev + 1;
