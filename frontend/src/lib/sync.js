@@ -7,6 +7,7 @@ export const SETTINGS_SYNC_KEYS = [
     'timerAlarm',
     'timerWebcamDetection',
     'goalAlarm',
+    'timerPreferences',
 ]
 
 // ---- Focus sessions -------------------------------------------------------

@@ -4,10 +4,12 @@ import { FaTrash } from 'react-icons/fa';
 import '../styles/Goal.css';
 import alarmsound from "../assets/mixkit-clear-announce-tones-2861.wav";
 import { useAuth } from '../context/AuthContext';
+import { useTimer } from '../context/TimerContext';
 import { pullTasks, pushTasks } from '../lib/sync';
 
 function Goal() {
   const { user } = useAuth();
+  const { timerPreferences } = useTimer();
   // Initialize tasks from localStorage
   const [tasks, setTasks] = useState(() => {
     const savedTasks = localStorage.getItem('tasks');
@@ -62,33 +64,45 @@ function Goal() {
       setTimerUpdate(prev => prev + 1);
       // Save current state of running tasks
       setTasks(currentTasks => {
-        const updatedTasks = currentTasks.map(task => {
-          if (task.isRunning) {
-            const elapsedMinutes = task.startTime 
-              ? (Date.now() - task.startTime) / (60 * 1000)
-              : task.elapsedTime;
-              
-            // Check if timer has just finished
-            if (task.duration > 0 && task.duration - elapsedMinutes <= 0) {
-              // Play alarm sound when timer finishes
-              if (settings.alarm) playaudio();
-              return { 
-                ...task, 
-                isRunning: false, 
-                elapsedTime: task.duration 
-              };
+        let autoStartNextId = null;
+        const updatedTasks = currentTasks.map((task, idx) => {
+          if (!task.isRunning) return task;
+
+          const elapsedMinutes = task.startTime
+            ? (Date.now() - task.startTime) / (60 * 1000)
+            : task.elapsedTime;
+
+          // Check if timer has just finished
+          if (task.duration > 0 && task.duration - elapsedMinutes <= 0) {
+            // Play alarm sound when timer finishes
+            if (settings.alarm) playaudio();
+            let done = { ...task, isRunning: false, elapsedTime: task.duration };
+            if (timerPreferences.autoCheckTasks) {
+              done = { ...done, completed: true, completedAt: new Date().toISOString() };
+              if (timerPreferences.autoSwitchTasks && autoStartNextId === null) {
+                const next = currentTasks.find(
+                  (c, i) => i !== idx && !c.completed && c.duration > 0
+                );
+                autoStartNextId = next ? next.id : null;
+              }
             }
-            
-            return { ...task, elapsedTime: elapsedMinutes };
+            return done;
           }
-          return task;
+
+          return { ...task, elapsedTime: elapsedMinutes };
         });
+
+        if (autoStartNextId !== null) {
+          return updatedTasks.map(t =>
+            t.id === autoStartNextId ? { ...t, startTime: Date.now(), isRunning: true } : t
+          );
+        }
         return updatedTasks;
       });
     }, 1000);
 
-    return () => clearInterval(interval); 
-  }, [tasks, settings.alarm]);
+    return () => clearInterval(interval);
+  }, [tasks, settings.alarm, timerPreferences]);
 
   // Update stats whenever tasks change
   const updateTodayStats = (currentTasks) => {

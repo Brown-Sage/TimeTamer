@@ -1,23 +1,15 @@
 import "../styles/Settings.css";
-import { useState } from "react";
 import { Switch } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate } from "react-router-dom";
+import { useTimer } from "../context/TimerContext";
+
 export default function Settings() {
     const navigate = useNavigate();
-    const [switches, setSwitches] = useState({
-        autoStartBreaks: true,
-        autoStartPomodoros: false,
-        longBreakInterval: false,
-        autoCheckTasks: false,
-        autoSwitchTasks: false
-    });
+    const { timerPreferences, updatePreference } = useTimer();
 
     const handleChange = (key) => (event) => {
-        setSwitches(prev => ({
-            ...prev,
-            [key]: event.target.checked
-        }));
+        updatePreference(key, event.target.checked);
     };
 
     return (
@@ -33,7 +25,7 @@ export default function Settings() {
                         <span>Auto Start Breaks</span>
                         <div className="switch-container">
                             <Switch 
-                                checked={switches.autoStartBreaks}
+                                checked={timerPreferences.autoStartBreaks}
                                 onChange={handleChange('autoStartBreaks')}
                                 color="primary"
                             />
@@ -44,7 +36,7 @@ export default function Settings() {
                         <span>Auto Start Pomodoros</span>
                         <div className="switch-container">
                             <Switch 
-                                checked={switches.autoStartPomodoros}
+                                checked={timerPreferences.autoStartPomodoros}
                                 onChange={handleChange('autoStartPomodoros')}
                                 color="primary"
                             />
@@ -55,7 +47,7 @@ export default function Settings() {
                         <span>Long break interval</span>
                         <div className="switch-container">
                             <Switch 
-                                checked={switches.longBreakInterval}
+                                checked={timerPreferences.longBreakInterval}
                                 onChange={handleChange('longBreakInterval')}
                                 color="primary"
                             />
@@ -67,7 +59,7 @@ export default function Settings() {
                         <span>Auto Check Tasks</span>
                         <div className="switch-container">
                             <Switch 
-                                checked={switches.autoCheckTasks}
+                                checked={timerPreferences.autoCheckTasks}
                                 onChange={handleChange('autoCheckTasks')}
                                 color="primary"
                             />
@@ -77,7 +69,7 @@ export default function Settings() {
                         <span>Auto Switch Tasks</span>
                         <div className="switch-container">
                             <Switch 
-                                checked={switches.autoSwitchTasks}
+                                checked={timerPreferences.autoSwitchTasks}
                                 onChange={handleChange('autoSwitchTasks')}
                                 color="primary"
                             />

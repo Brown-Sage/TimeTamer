@@ -9,6 +9,14 @@ const DEFAULT_TIMER_SETTINGS = {
     longbreak: { minutes: 15, seconds: 0 }
 };
 
+const DEFAULT_PREFERENCES = {
+    autoStartBreaks: true,
+    autoStartPomodoros: false,
+    longBreakInterval: true, // take a long break every 4th pomodoro
+    autoCheckTasks: false,
+    autoSwitchTasks: false
+};
+
 const playAlarm = () => {
     const audio = new Audio(alarmSound);
     audio.play().catch(console.error);
@@ -42,6 +50,14 @@ export function TimerProvider({ children }) {
         alarm: localStorage.getItem('timerAlarm') === 'true',
         webcamDetection: localStorage.getItem('timerWebcamDetection') === 'true'
     });
+    const [timerPreferences, setTimerPreferences] = useState(() => {
+        try {
+            const saved = JSON.parse(localStorage.getItem('timerPreferences') || '{}');
+            return { ...DEFAULT_PREFERENCES, ...saved };
+        } catch {
+            return { ...DEFAULT_PREFERENCES };
+        }
+    });
     const [isUserPresent, setIsUserPresent] = useState(true);
 
     // Refs mirror the latest state so a single stable interval can read
@@ -49,7 +65,7 @@ export function TimerProvider({ children }) {
     const timeRef = useRef({ hours, minutes, seconds });
     timeRef.current = { hours, minutes, seconds };
     const metaRef = useRef({});
-    metaRef.current = { mode, focusCount, settings, timerSettings };
+    metaRef.current = { mode, focusCount, settings, timerSettings, timerPreferences };
 
     // Setters and refs are stable, so these callbacks never change identity.
     const applyMode = useCallback((nextMode) => {
@@ -57,6 +73,15 @@ export function TimerProvider({ children }) {
         setMode(nextMode);
         setMinutes(ts[nextMode].minutes);
         setSeconds(0);
+    }, []);
+
+    // Persisted immediately; the periodic settings backup picks it up.
+    const updatePreference = useCallback((key, value) => {
+        setTimerPreferences(prev => {
+            const next = { ...prev, [key]: Boolean(value) };
+            localStorage.setItem('timerPreferences', JSON.stringify(next));
+            return next;
+        });
     }, []);
 
     const startStop = () => {
@@ -121,7 +146,12 @@ export function TimerProvider({ children }) {
     }, []);
 
     const completeSession = useCallback(() => {
-        const { mode: currentMode, settings: currentSettings } = metaRef.current;
+        const {
+            mode: currentMode,
+            settings: currentSettings,
+            focusCount: currentFocusCount,
+            timerPreferences: prefs
+        } = metaRef.current;
 
         setIsRunning(false);
 
@@ -129,14 +159,13 @@ export function TimerProvider({ children }) {
             if (currentSettings.alarm) playAlarm();
             handleFocusSessionCompleted();
 
-            if ((metaRef.current.focusCount + 1) % 4 === 0) {
-                applyMode('longbreak');
-            } else {
-                applyMode('break');
-            }
+            const useLongBreak = prefs.longBreakInterval && (currentFocusCount + 1) % 4 === 0;
+            applyMode(useLongBreak ? 'longbreak' : 'break');
+            if (prefs.autoStartBreaks) setIsRunning(true);
         } else {
             if (currentSettings.alarm) playAlarm();
             applyMode('focus');
+            if (prefs.autoStartPomodoros) setIsRunning(true);
         }
     }, [applyMode, handleFocusSessionCompleted]);
 
@@ -153,6 +182,10 @@ export function TimerProvider({ children }) {
                 alarm: localStorage.getItem('timerAlarm') === 'true',
                 webcamDetection: localStorage.getItem('timerWebcamDetection') === 'true'
             });
+            try {
+                const savedPrefs = JSON.parse(localStorage.getItem('timerPreferences') || '{}');
+                setTimerPreferences(prev => ({ ...prev, ...savedPrefs }));
+            } catch { /* corrupted value - keep current */ }
         };
         window.addEventListener('timetamer:settings-synced', handler);
         return () => window.removeEventListener('timetamer:settings-synced', handler);
@@ -210,6 +243,8 @@ export function TimerProvider({ children }) {
         mode,
         focusCount,
         settings,
+        timerPreferences,
+        updatePreference,
         isUserPresent,
         startStop,
         handleUserPresenceChange,
