@@ -356,7 +356,7 @@ class SpotifyOAuthTests(LoggedInMixin, TestCase):
     def test_status_disconnected_by_default(self):
         resp = self.client.get('/api/spotify/status/')
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), {'connected': False})
+        self.assertEqual(resp.json()['connected'], False)
 
     def test_disconnect_is_idempotent(self):
         resp = self.client.delete('/api/spotify/disconnect/')

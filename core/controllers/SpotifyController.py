@@ -163,7 +163,7 @@ class SpotifyStatusView(View):
         connected = Setting.objects.filter(
             user=request.user, key=TOKENS_KEY, deleted_at__isnull=True,
         ).exists()
-        return JsonResponse({'connected': connected})
+        return JsonResponse({'connected': connected, 'configured': spotify_configured()})
 
 
 class SpotifyDisconnectView(View):

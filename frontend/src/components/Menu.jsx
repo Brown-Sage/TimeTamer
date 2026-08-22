@@ -4,6 +4,7 @@ import { MdWallpaper } from "react-icons/md";
 import { CiClock1 } from "react-icons/ci";
 import "../styles/Menu.css"
 import { useNavigate } from "react-router-dom";
+import SpotifyConnect from "./SpotifyConnect";
 
 export default function Menu() {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ export default function Menu() {
         <MdWallpaper />
         <p>Themes</p>
       </div>
+      <SpotifyConnect />
     </div>
   );
 }
