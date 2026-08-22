@@ -14,7 +14,7 @@ export default defineConfig({
         description: 'A PWA for managing your time',
         theme_color: '#000000',
         background_color: "#ffffff",
-        start_url: "http://192.168.2.43:8000/",
+        start_url: "/",
         display: "standalone",
         screenshots: [
           {

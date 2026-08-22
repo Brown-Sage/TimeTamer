@@ -1,41 +1,46 @@
 .animcontainer {
     position: fixed;
-    top: 5px;
-    right: 20px;
+    right: 28px;
+    bottom: 100px;
     display: flex;
-    gap: 40px;
-    z-index: 1000;
+    align-items: flex-end;
+    gap: 18px;
+    z-index: 900;
+    opacity: 0.85;
 }
 
-.cash, .streak  {
+.cash,
+.streak {
     display: flex;
     font-size: 12px;
-    width: 60px;
-    height: 40px;
+    width: 54px;
+    height: 38px;
     cursor: pointer;
     transition: transform 0.2s ease;
 }
-.idea{
+
+.idea {
     display: flex;
-    width: 30px;
-    height: 40px;
+    width: 28px;
+    height: 38px;
     cursor: pointer;
     transition: transform 0.2s ease;
 }
 
-.cash:hover, .streak:hover, .idea:hover {
-    transform: scale(1.1);
+.cash:hover,
+.streak:hover,
+.idea:hover {
+    transform: scale(1.12);
 }
 
-/* Optional: Add a subtle glow effect on hover */
 .cash:hover {
-    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+    filter: drop-shadow(0 0 8px rgba(226, 154, 99, 0.5));
 }
 
 .streak:hover {
-    filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.5));
+    filter: drop-shadow(0 0 8px rgba(224, 137, 111, 0.5));
 }
 
 .idea:hover {
-    filter: drop-shadow(0 0 5px rgba(0, 255, 255, 0.5));
+    filter: drop-shadow(0 0 8px rgba(150, 178, 138, 0.55));
 }

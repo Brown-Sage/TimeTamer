@@ -1,215 +1,53 @@
+/* ---------- Inner timer card (position handled by Home stage) ---------- */
 .Maintimer {
-    position: absolute;
-    top: 60%; 
-    left: 50%; 
-    border-radius: 30px;
-    border: 1px solid white;
-    transform: translate(-50%, -50%);
     display: flex;
     justify-content: space-around;
     align-items: center;
-    width: 450px;
-    height: 21rem;
-    background-color: rgba(1, 0, 10, 0.4);
-    backdrop-filter: blur(5px);
-    font-size: 4rem;
+    width: min(470px, calc(100vw - 48px));
+    height: auto;
+    padding: 34px 30px 30px;
+    box-sizing: border-box;
     flex-direction: column;
+    background: var(--surface);
+    backdrop-filter: blur(26px) saturate(1.25);
+    -webkit-backdrop-filter: blur(26px) saturate(1.25);
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    box-shadow:
+        0 44px 90px -32px rgba(0, 0, 0, 0.8),
+        0 8px 24px rgba(226, 154, 99, 0.07),
+        inset 0 1px 0 rgba(255, 232, 204, 0.09);
 }
-.Options {
-    display: flex;
+
+.timer-container {
     width: 100%;
-    flex-direction: row;
-    justify-content: space-evenly;
-    gap: 10px;
-}
-
-.child1 {
-    padding: 0;
-    font-size: small;
-    width: 100px;  /* Fixed width for all states */
-    height: 40px;
-    background-color: transparent;
-    border: whitesmoke solid 1px;
-    border-radius: 10px;
-    color: white;
-    cursor: pointer;
-    transition: all 0.2s ease;  /* Smooth transition for all properties */
-}
-
-.child1:active {
-    background-color: black;
-    border: 2px solid rgb(11, 198, 245);
-    color: rgb(11, 198, 245);
-    font-weight: bolder;
-}
-
-.child1.active {
-    background-color: black;
-    border: 2px solid rgb(11, 198, 245);
-    color: rgb(11, 198, 245);
-    font-size: medium;
-    font-weight: bolder;
-}
-
-.child1:hover {
-    background-color: rgba(1, 1, 1, 0.3);
-    font-size: medium;
-    font-weight: bold;
-    color: rgb(249, 177, 10);
-    border: 2px solid rgb(249, 176, 8);
-}
-
-.child1.active:hover {
-    background-color: black;
-    border: 2px solid rgb(11, 198, 245);
-    color: rgb(11, 198, 245);
-    font-weight: bolder;
-}
-
-#timer {
-    font-size: 5.7rem;
-    font-weight: bolder;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+    gap: 14px;
 }
 
-#timer span {
-    cursor: pointer;
-    min-width: 1.8ch;
-    display: inline-block;
-    text-align: center;
-}
-
-#timer span:hover {
-    opacity: 0.8;
-}
-
-#startStopBtn{
-    align-items: center;
-    background-color: whitesmoke;
-    border: 2px solid #111;
-    border-radius: 8px;
-    color: #111;
-    cursor: pointer;
-    display: flex;
-    font-family: Inter,sans-serif;
-    font-size: 16px;
-    height: 40px;
-    justify-content: center;
-    line-height: 24px;
-    padding: 0 25px;
-    position: relative;
-    text-align: center;
-    text-decoration: none;
-    margin: 0 auto; /* Center the button */
-    min-width: 120px; /* Give it a minimum width */
-}
-
-#startStopBtn:hover:after {
-  transform: translate(0, 0);
-}
-
-#startStopBtn:active {
-  background-color: #ffdeda;
-  outline: 0;
-}
-
-#startStopBtn:hover {
-  outline: 0;
-}
-
-@media (min-width: 768px) {
-  #startStopBtn {
-    padding: 0 40px;
-  }
-}
-#session-count{
-  font-size: medium;
-  text-align: center;
-  color: white;
-  margin: 10px 0;
-}
-
-.timer-input {
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid white;
-    color: white;
-    font-size: 5.7rem;
-    width: 2.2ch;
-    text-align: center;
-    outline: none;
-    padding: 0;
-    margin: 0;
-    font-family: inherit;
-    font-weight: bolder;
-}
-
-.timer-input:focus {
-    border-color: #4CAF50;
-    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
-}
-
-.timer-input::-webkit-inner-spin-button,
-.timer-input::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-/* For Firefox */
-.timer-input[type=number] {
-    -moz-appearance: textfield;
-}
-
-.progress-bar-container {
-    width: 100%;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
-    overflow: hidden;
-    /* Add outline */
-    outline: 1px solid rgba(255, 255, 255, 0.3);
-    outline-offset: 1px;
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
-}
-
-.progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #4CAF50, #8BC34A);
-    transition: width 1s linear;
-    border-radius: 2px;
-    /* Add inner outline */
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
-}
-
+/* ---------- Header controls ---------- */
 .timer-header {
     position: absolute;
-    top: 10px;
+    top: 14px;
     left: 0;
     right: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 15px;
-}
-
-.timer-controls {
-    display: flex;
-    width: 100%;
-    justify-content: space-between; /* Space between controls */
-    align-items: center;
+    padding: 0 16px;
+    box-sizing: border-box;
 }
 
 .timer-control-btn {
-    background: rgba(40, 40, 40, 0.6);
-    border: none;
-    color: rgba(255, 255, 255, 0.8);
+    background: var(--surface-dim);
+    border: 1px solid var(--line-soft);
+    color: var(--ink-soft);
     cursor: pointer;
     padding: 6px;
     transition: all 0.2s ease;
-    border-radius: 5px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -218,51 +56,52 @@
 }
 
 .timer-control-btn:hover {
-    color: white;
-    background: rgba(60, 60, 60, 0.8);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    color: #fff6ea;
+    background: rgba(255, 238, 216, 0.12);
+    transform: translateY(-1px);
 }
 
 .timer-control-btn:active {
     transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* ---------- Settings popover ---------- */
 .timer-settings-menu {
     position: absolute;
-    top: 45px;
-    left: 15px;
-    background: rgba(10, 10, 10, 0.9);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
+    top: 52px;
+    left: 16px;
+    background: rgba(30, 25, 20, 0.92);
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+    border-radius: var(--radius-md);
     padding: 16px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 32px 64px -24px rgba(0, 0, 0, 0.75);
     z-index: 100;
-    min-width: 220px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    animation: fadeIn 0.2s ease-out;
+    min-width: 230px;
+    border: 1px solid var(--line);
+    animation: popIn 0.18s ease-out;
 }
 
 .settings-title {
-    margin: 0 0 16px 0;
-    padding-bottom: 12px;
-    font-size: 1.1rem;
-    color: #81C784;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 0 0 12px 0;
+    padding-bottom: 10px;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--accent);
+    border-bottom: 1px solid var(--line-soft);
     text-align: center;
-    font-weight: 500;
 }
 
 .settings-option {
     display: flex;
     align-items: center;
     gap: 12px;
-    color: white;
-    margin: 12px 0;
-    font-size: 0.9rem;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--ink);
+    margin: 10px 0;
+    font-size: 0.88rem;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--line-soft);
 }
 
 .settings-option:last-child {
@@ -270,53 +109,207 @@
     margin-bottom: 0;
 }
 
-.settings-option input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
+.settings-option input[type='checkbox'] {
+    width: 17px;
+    height: 17px;
     cursor: pointer;
-    accent-color: #4CAF50;
+    accent-color: var(--accent);
 }
 
 .settings-option label {
     cursor: pointer;
-    opacity: 0.9;
-    font-weight: 400;
+    opacity: 0.85;
+    font-weight: 600;
     user-select: none;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease;
     flex: 1;
 }
 
 .settings-option:hover label {
     opacity: 1;
-    color: #81C784;
+    color: var(--accent);
 }
 
-.user-absence-notice {
-    background: rgba(244, 67, 54, 0.15);
-    color: #ff7b72;
-    padding: 10px 16px;
-    border-radius: 8px;
-    margin: 12px auto;
-    font-size: 0.9rem;
+/* ---------- Mode tabs ---------- */
+.Options {
+    margin-top: 28px;
+    display: flex;
+    width: 100%;
+    gap: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--line-soft);
+    border-radius: 999px;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.child1 {
+    flex: 1;
+    padding: 9px 0;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    background-color: transparent;
+    border: none;
+    border-radius: 999px;
+    color: var(--ink-faint);
+    cursor: pointer;
+    transition: all 0.22s ease;
+}
+
+.child1:hover {
+    color: var(--ink-soft);
+    background: rgba(255, 238, 216, 0.06);
+}
+
+.child1.active {
+    background: linear-gradient(135deg, rgba(226, 154, 99, 0.9), rgba(201, 126, 70, 0.9));
+    color: #241a12;
+    box-shadow: 0 10px 22px -10px rgba(226, 154, 99, 0.55);
+}
+
+.child1.active:hover {
+    background: linear-gradient(135deg, rgba(226, 154, 99, 1), rgba(201, 126, 70, 1));
+    color: #241a12;
+}
+
+/* ---------- Clock ---------- */
+#timer {
+    font-family: var(--font-display);
+    font-size: 4.7rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+    color: #fbf3e8;
+    text-shadow: 0 4px 30px rgba(226, 154, 99, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    line-height: 1;
+    margin-top: 2px;
+}
+
+#timer span {
+    cursor: pointer;
+    min-width: 1.55ch;
+    display: inline-block;
     text-align: center;
-    border: 1px solid rgba(244, 67, 54, 0.25);
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+#timer span:hover {
+    color: var(--accent);
+    text-shadow: 0 0 26px rgba(226, 154, 99, 0.45);
+}
+
+.timer-input {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--accent);
+    color: #fbf3e8;
+    font-family: var(--font-display);
+    font-size: 4.7rem;
+    font-weight: 600;
+    width: 2ch;
+    text-align: center;
+    outline: none;
+    padding: 0;
+    margin: 0;
+}
+
+.timer-input:focus {
+    border-color: #f0b585;
+}
+
+.timer-input::-webkit-inner-spin-button,
+.timer-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.timer-input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* ---------- Session + start ---------- */
+#session-count {
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--ink-faint);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin: 2px 0;
+}
+
+#startStopBtn {
+    align-items: center;
+    background: linear-gradient(135deg, #e29a63, #c97e46);
+    border: none;
+    border-radius: 999px;
+    color: #241a12;
+    cursor: pointer;
+    display: flex;
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    height: 47px;
+    justify-content: center;
+    padding: 0 46px;
+    position: relative;
+    text-align: center;
+    margin: 6px auto 0;
+    min-width: 152px;
+    box-shadow: 0 18px 34px -14px rgba(226, 154, 99, 0.6);
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
+}
+
+#startStopBtn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+    box-shadow: 0 22px 40px -16px rgba(226, 154, 99, 0.7);
+}
+
+#startStopBtn:active {
+    transform: translateY(0);
+}
+
+/* ---------- Absence notice ---------- */
+.user-absence-notice {
+    background: var(--danger-soft);
+    color: var(--danger);
+    padding: 9px 16px;
+    border-radius: 999px;
+    margin-top: 36px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-align: center;
+    border: 1px solid rgba(224, 137, 111, 0.28);
     max-width: 80%;
-    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.15);
     animation: pulseNotice 2s infinite alternate;
 }
 
 @keyframes pulseNotice {
-    from { opacity: 0.9; }
-    to { opacity: 1; box-shadow: 0 2px 12px rgba(244, 67, 54, 0.25); }
-}
-
-@keyframes fadeIn {
     from {
-        opacity: 0;
-        transform: translate(-50%, -60%);
+        opacity: 0.85;
     }
     to {
         opacity: 1;
-        transform: translate(-50%, -50%);
+    }
+}
+
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }

@@ -2,70 +2,66 @@
     position: relative;
     z-index: 1000;
     display: inline-block;
-    margin: 0;
+    margin: 0 auto;
 }
 
 .webcam-toggle {
     position: relative;
-    background-color: rgba(40, 40, 40, 0.85);
-    color: #fff;
-    left: 300px;
-    border: none;
-    border-radius: 5px;
-    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.32);
+    color: var(--ink-soft);
+    border: 1px solid var(--line-soft);
+    border-radius: 999px;
+    padding: 5px 13px;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .webcam-toggle.active {
-    background-color: rgba(76, 175, 80, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--sage-soft);
+    color: var(--sage-deep);
+    border-color: rgba(150, 178, 138, 0.4);
 }
 
 .webcam-toggle:hover {
-    background-color: rgba(60, 60, 60, 0.9);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
+    border-color: rgba(255, 230, 200, 0.3);
 }
 
 .webcam-toggle.active:hover {
-    background-color: rgba(76, 175, 80, 0.9);
+    filter: brightness(1.15);
 }
 
 .webcam-error {
-    color: #ff6b6b;
+    color: var(--danger);
     margin-top: 8px;
-    padding: 8px;
-    background-color: rgba(255, 107, 107, 0.1);
-    border-radius: 4px;
-    font-size: 0.9rem;
+    padding: 8px 12px;
+    background-color: var(--danger-soft);
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    font-weight: 600;
 }
 
 .webcam-debug {
-    background-color: rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
+    background-color: rgba(255, 238, 216, 0.07);
+    border-radius: var(--radius-sm);
     padding: 8px;
     margin-top: 8px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     max-width: 300px;
     word-break: break-all;
-}
-
-.webcam-section {
-    margin: 10px 0;
-    padding: 10px;
-    background-color: rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
+    color: var(--ink-soft);
 }
 
 .user-absence-notice {
     margin-top: 10px;
-    color: #ff6b6b;
-    background-color: rgba(255, 107, 107, 0.1);
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 0.9rem;
+    color: var(--danger);
+    background-color: var(--danger-soft);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
     text-align: center;
-} 
+}

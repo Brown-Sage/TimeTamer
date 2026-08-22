@@ -1,68 +1,76 @@
+/* ---------- Live clock chip ---------- */
 .time-progress-container {
     position: absolute;
-    top: 63px;
-    right: 2px;
-    padding: 6px;
+    top: -6px;
+    right: 30px;
+    padding: 13px 20px 15px;
     width: auto;
-    margin: 0px;
-    color: white;
+    min-width: 215px;
+    box-sizing: border-box;
+    color: var(--ink);
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    background-color: rgba(0.6, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
-    border-radius: 12px;
-  }
-  
-  .time-info {
+    align-items: stretch;
+    background: var(--surface);
+    backdrop-filter: blur(22px) saturate(1.2);
+    -webkit-backdrop-filter: blur(22px) saturate(1.2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+.time-info {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 8px;
-  }
-  
-  .time-display {
+    margin-bottom: 10px;
+}
+
+.time-display {
     display: flex;
     align-items: baseline;
-  }
-  
-  .current-time {
-    font-size: 2.5rem;
-    font-weight: 500;
-    letter-spacing: -1px;
-    color: white;
-    font-family: 'Arial', sans-serif;
-  }
-  
-  .current-period {
-    font-size: 1rem;
-    margin-left: 4px;
-    color: white;
-    align-items: flex-start;
-  }
-  
-  .current-date {
-    font-size: 0.9rem;
-    text-transform: none;
-    letter-spacing: 0.9px;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.8);
-  }
-  
-  .progress-bar-container {
-    width: 97%;
-    height: 8px;
-    border: 1px solid white;
-    background-color: transparent;
-    border-radius: 1px;
+    gap: 5px;
+}
+
+.current-time {
+    font-family: var(--font-display);
+    font-size: 2.05rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    color: #fbf3e8;
+    line-height: 1;
+    text-shadow: 0 2px 20px rgba(226, 154, 99, 0.2);
+}
+
+.current-period {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+}
+
+.current-date {
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    margin-top: 5px;
+}
+
+/* ---------- Day progress ---------- */
+.progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background-color: rgba(255, 238, 216, 0.08);
+    border-radius: 999px;
     overflow: hidden;
-    margin-right: 1px;
-  }
-  
-  .progress-bar {
+}
+
+.progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    background: linear-gradient(90deg, #96b28a, #e29a63);
     transition: width 1s linear;
-    border-radius: 1px;
-    box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
-  }
+    border-radius: 999px;
+    box-shadow: 0 0 12px rgba(226, 154, 99, 0.35);
+}

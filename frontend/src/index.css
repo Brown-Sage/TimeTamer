@@ -1,78 +1,147 @@
-/* Global styles for background handling */
+/* ============================================================
+   TimeTamer — dark glass design system
+   Warm midnight tones, frosted translucent surfaces that float
+   over any wallpaper (custom Theme backgrounds still work).
+   ============================================================ */
+
 :root {
-  --app-background: linear-gradient(to bottom right, #1e293b, #0f172a);
+    /* Default wallpaper: warm midnight with ember + moss glows */
+    --app-background:
+        radial-gradient(1100px 700px at 85% -10%, rgba(224, 154, 99, 0.13), transparent 62%),
+        radial-gradient(900px 650px at -10% 108%, rgba(150, 178, 138, 0.09), transparent 60%),
+        linear-gradient(158deg, #191411 0%, #221b15 52%, #151110 100%);
+
+    /* Glass surfaces */
+    --surface: rgba(33, 27, 22, 0.55);
+    --surface-strong: rgba(40, 33, 27, 0.82);
+    --surface-dim: rgba(255, 238, 216, 0.055);
+
+    /* Ink */
+    --ink: #f3eadd;
+    --ink-soft: #bcac97;
+    --ink-faint: #867661;
+
+    /* Lines & accents */
+    --line: rgba(255, 230, 200, 0.11);
+    --line-soft: rgba(255, 230, 200, 0.07);
+    --accent: #e29a63;
+    --accent-deep: #c97e46;
+    --accent-soft: rgba(226, 154, 99, 0.14);
+    --sage: #a9c09c;
+    --sage-deep: #bccfb0;
+    --sage-soft: rgba(150, 178, 138, 0.16);
+    --danger: #e0896f;
+    --danger-soft: rgba(224, 137, 111, 0.14);
+
+    /* Shape & depth */
+    --radius-lg: 26px;
+    --radius-md: 16px;
+    --radius-sm: 10px;
+    --shadow-card:
+        0 28px 56px -24px rgba(0, 0, 0, 0.65),
+        0 2px 8px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 232, 204, 0.06);
+    --shadow-pop:
+        0 40px 80px -30px rgba(0, 0, 0, 0.75),
+        inset 0 1px 0 rgba(255, 232, 204, 0.08);
+
+    /* Type */
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Nunito Sans', 'Segoe UI', sans-serif;
 }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  width: 100%;
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    width: 100%;
 }
 
 html {
-  /* Default background if none is selected */
-  background: var(--app-background);
-  background-attachment: fixed !important;
-  background-size: cover !important;
-  background-position: center !important;
-  min-height: 100vh;
-  height: 100%;
+    background: var(--app-background);
+    background-attachment: fixed !important;
+    background-size: cover !important;
+    background-position: center !important;
+    min-height: 100vh;
+    height: 100%;
 }
 
 html.custom-background {
-  /* Ensure proper rendering for custom backgrounds */
-  background-repeat: no-repeat !important;
+    background-repeat: no-repeat !important;
 }
 
 body {
-  /* Make body transparent to show html background */
-  background-color: transparent !important;
-  min-height: 100vh;
-  height: 100%;
+    background-color: transparent !important;
+    min-height: 100vh;
+    height: 100%;
+    font-family: var(--font-body);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Ensures the app container covers the full viewport */
 #root {
-  min-height: 100vh;
-  height: 100%;
+    min-height: 100vh;
+    height: 100%;
 }
 
-/* Add custom scrollbar */
+/* Shared glass card — used across widgets */
+.glass-card {
+    background: var(--surface);
+    backdrop-filter: blur(22px) saturate(1.2);
+    -webkit-backdrop-filter: blur(22px) saturate(1.2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--font-display);
+    color: var(--ink);
+}
+
+button,
+input,
+select,
+textarea {
+    font-family: var(--font-body);
+    color: inherit;
+}
+
+::selection {
+    background: rgba(226, 154, 99, 0.35);
+    color: #fff6ea;
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+    width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 10px;
+    background: rgba(243, 234, 221, 0.16);
+    border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
+    background: rgba(243, 234, 221, 0.26);
 }
 
-/* Make sure all containers have correct transparency */
-.container, #root > div {
-  background-color: transparent !important;
+/* Keep the wallpaper visible through app containers */
+.container,
+.home,
+#root > div {
+    background-color: transparent !important;
 }
 
-/* Additional selectors to ensure background visibility */
-[data-reactroot], 
-.app-container, 
+[data-reactroot],
+.app-container,
 .main-container {
-  background-color: transparent !important;
-}
-
-/* Force background to show on all browsers */
-@media all {
-  html {
-    background: var(--app-background) !important;
-    background-attachment: fixed !important;
-    background-size: cover !important;
-  }
+    background-color: transparent !important;
 }

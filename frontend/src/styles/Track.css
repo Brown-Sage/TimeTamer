@@ -1,36 +1,15 @@
 .track-container {
-  margin: 20px 0;
+  margin: 0;
   width: 100%;
   max-width: 100%;
-  background-color: rgba(26, 26, 26, 0.95);
-  border-radius: 0;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  position: relative;
-  backdrop-filter: blur(10px);
+  background-color: transparent;
+  box-sizing: border-box;
 }
 
-.track-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 5px;
-  background: linear-gradient(90deg, #4CAF50, #81C784);
-  z-index: 1;
-}
-
-.track-section {
-  padding: 0;
-  width: 100%;
-  animation: fadeIn 0.8s ease-in-out;
-}
-
-@keyframes fadeIn {
+@keyframes trackFadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
