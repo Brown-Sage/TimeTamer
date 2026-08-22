@@ -1,12 +1,9 @@
 import { MdQueryStats } from "react-icons/md";
 import { LuListTodo } from "react-icons/lu";
-import { RiGeminiFill } from "react-icons/ri";
 import { MdWallpaper } from "react-icons/md";
 import { CiClock1 } from "react-icons/ci";
 import "../styles/Menu.css"
 import { useNavigate } from "react-router-dom";
-// import { openTimer } from "./Timer";
-import Track from "./Track";
 
 export default function Menu() {
   const navigate = useNavigate();

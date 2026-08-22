@@ -5,10 +5,8 @@ import "../styles/Timer.css";
 import WebcamDetector from "./WebcamDetector";
 import "../styles/WebcamDetector.css";
 import { useTimer } from "../context/TimerContext";
-import PropTypes from "prop-types";
 
-function Timer(props) {
-    const { getSuggestions } = props;
+function Timer() {
     const {
         hours,
         minutes,
@@ -225,9 +223,5 @@ function Timer(props) {
         </div>
     );
 }
-
-Timer.propTypes = {
-    getSuggestions: PropTypes.func.isRequired
-};
 
 export default Timer;

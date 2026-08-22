@@ -351,7 +351,7 @@ function Goal() {
                                 )}
                             </div>
                         </div>
-                        <button onClick={() => deleteTask(task.id)}><FaTrash color="white" /></button>
+                        <button onClick={() => deleteTask(task.id)} aria-label="Delete task"><FaTrash /></button>
                     </li>
                 ))}
             </ul>
