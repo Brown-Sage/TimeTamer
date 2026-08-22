@@ -1,54 +1,37 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import '../styles/Login.css'
 import { toast } from 'react-toastify'
-import axios from 'axios'
+import api from '../lib/api'
 
 export default function Login() {
     const [username, setUsername] = useState('')
-    // const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
-    const handleSubmit = () => {
-        const base_url = import.meta.env.VITE_BASE_URL
-        console.log('login')
-        const formData = new FormData()
+    const handleSubmit = async () => {
+        if (!username || !password) {
+            toast.error('Please enter your username and password')
+            return
+        }
 
+        const formData = new FormData()
         formData.append('username', username)
         formData.append('password', password)
 
-        let config = {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        }
-
-        axios.defaults.baseURL = ''
-        axios
-            .post(`${base_url}/login`, formData, config)
-            .then(({ data }) => {
-                console.log('login resp', data[0])
-                let resp = data[0]
-                window.localStorage.setItem('authenticated', true)
-                window.localStorage.setItem('username', resp.username)
-                window.localStorage.setItem('user_id', resp.id)
-
-                toast.success('Login Successful :)')
-                console.log(
-                    'auth?',
-                    window.localStorage.getItem('authenticated'),
-                    window.localStorage.getItem('username'),
-                    window.localStorage.getItem('user_id')
-                )
-
-                window.location.href = `/${username}`
-            })
-            .catch((err) => {
-                console.log('login err', err)
-
-                window.localStorage.setItem('authenticated', false)
+        try {
+            const { data } = await api.post('api/login/', formData)
+            window.localStorage.setItem('username', data.user.username)
+            toast.success('Login Successful :)')
+            window.location.href = `/${data.user.username}`
+        } catch (err) {
+            if (err.response?.status === 400) {
                 toast.error('Invalid Credentials!')
-                // window.location.href = `/`
-            })
+            } else {
+                toast.error(
+                    err.response?.data?.message ||
+                        'Something went wrong. Please try again.'
+                )
+            }
+        }
     }
 
     return (

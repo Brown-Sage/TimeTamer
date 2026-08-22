@@ -1,39 +1,38 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import '../styles/Signin.css' // Reusing the same CSS file
-import axios from 'axios'
+import api from '../lib/api'
 import { toast } from 'react-toastify'
-import { env } from 'face-api.js'
+
 export default function SignIn() {
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
-    const handleSubmit = () => {
-        const base_url = import.meta.env.VITE_BASE_URL
-        console.log('register')
+    const handleSubmit = async () => {
+        if (!email || !username || !password) {
+            toast.error('All fields are required')
+            return
+        }
 
         const formData = new FormData()
-
         formData.append('email', email)
         formData.append('username', username)
         formData.append('password', password)
 
-        let config = {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        }
-
-        axios.defaults.baseURL = ''
-        axios.post(`${base_url}/register`, formData, config).then((resp) => {
-            console.log('REGISTER RESP', resp)
+        try {
+            await api.post('api/register/', formData)
             toast.success('Registration Successful :)')
             window.location.href = '/login/'
-        })
+        } catch (err) {
+            toast.error(
+                err.response?.data?.message ||
+                    'Registration failed. Please try again.'
+            )
+        }
     }
 
     return (
-        <div className="container">
+        <div>
             <div className="overlay">
                 <div className="popup-signin">
                     <button
@@ -64,8 +63,6 @@ export default function SignIn() {
                         className="input-box"
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    {/* <label>Confirm Password:</label>
-            <input type="password" placeholder="Confirm Password" className="input-box" /> */}
                     <button
                         className="login-btn"
                         onClick={() => handleSubmit()}

@@ -14,6 +14,7 @@ import Theme from './components/Theme'
 import { useState, useEffect } from 'react'
 import Track from './components/Track'
 import { TimerProvider } from './context/TimerContext'
+import { AuthProvider } from './context/AuthContext'
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Enhanced function to load the saved background with error handling
@@ -203,11 +204,13 @@ function App() {
     }, [])
 
     return (
-        <TimerProvider>
-            <Router>
-                <AppContent />
-            </Router>
-        </TimerProvider>
+        <AuthProvider>
+            <TimerProvider>
+                <Router>
+                    <AppContent />
+                </Router>
+            </TimerProvider>
+        </AuthProvider>
     )
 }
 
