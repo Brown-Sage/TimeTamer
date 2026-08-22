@@ -13,14 +13,16 @@ import starAnimation from "../assets/animations/star.json";
 import runnerAnimation from "../assets/animations/runner.json";
 import plantAnimation from "../assets/animations/plant.json";
 import { useEffect, useState } from "react";
+import { pullFocusSessions } from "../lib/sync";
 
 const Container = styled("div")({
-  backgroundColor: "rgba(26, 26, 26, 0.95)",
-  padding: "10px",
-  width: "98.8vw",  
-  color: "#fff",
-  fontFamily: "Roboto, sans-serif",
-  
+  backgroundColor: "transparent",
+  padding: "36px 48px 60px",
+  width: "100%",
+  minHeight: "100vh",
+  boxSizing: "border-box",
+  color: "#f3eadd",
+  fontFamily: "'Nunito Sans', sans-serif",
 });
 
 const Header = styled("div")({
@@ -29,7 +31,7 @@ const Header = styled("div")({
   alignItems: "center",
   marginBottom: "32px",
   paddingBottom: "16px",
-  borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+  borderBottom: "1px solid rgba(255, 230, 200, 0.11)",
 });
 
 const StatsGrid = styled("div")({
@@ -40,30 +42,35 @@ const StatsGrid = styled("div")({
 });
 
 const StatCard = styled(Card)({
-  backgroundColor: "rgba(44, 44, 44, 0.8)",
-  color: "#fff",
+  backgroundColor: "rgba(30, 25, 20, 0.6)",
+  backdropFilter: "blur(22px) saturate(1.2)",
+  WebkitBackdropFilter: "blur(22px) saturate(1.2)",
+  color: "#f3eadd",
   textAlign: "center",
   padding: "24px",
-  borderRadius: "16px",
-  border: "1px solid rgba(255, 255, 255, 0.1)",
+  borderRadius: "26px",
+  border: "1px solid rgba(255, 230, 200, 0.11)",
+  boxShadow: "0 24px 48px -20px rgba(0, 0, 0, 0.6)",
   transition: "transform 0.3s ease, box-shadow 0.3s ease",
   "&:hover": {
     transform: "translateY(-4px)",
-    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
+    boxShadow: "0 32px 56px -22px rgba(0, 0, 0, 0.7)",
   },
 });
 
 const DayProgressCard = styled(Card)({
-  backgroundColor: "rgba(44, 44, 44, 0.8)",
-  color: "#fff",
+  backgroundColor: "rgba(30, 25, 20, 0.6)",
+  backdropFilter: "blur(22px) saturate(1.2)",
+  WebkitBackdropFilter: "blur(22px) saturate(1.2)",
+  color: "#f3eadd",
   padding: "32px",
-  borderRadius: "16px",
-  border: "1px solid rgba(255, 255, 255, 0.1)",
-  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
+  borderRadius: "26px",
+  border: "1px solid rgba(255, 230, 200, 0.11)",
+  boxShadow: "0 24px 48px -20px rgba(0, 0, 0, 0.6)",
   "& h5": {
     marginBottom: "24px",
     fontWeight: "600",
-    color: "#81C784"
+    color: "#e29a63"
   },
   "& .day-status": {
     display: "flex",
@@ -71,14 +78,14 @@ const DayProgressCard = styled(Card)({
     gap: "8px",
     marginBottom: "32px",
     padding: "8px 16px",
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-    borderRadius: "8px",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
+    backgroundColor: "rgba(255, 238, 216, 0.05)",
+    borderRadius: "12px",
+    border: "1px solid rgba(255, 230, 200, 0.08)",
     "& .status-indicator": {
       width: "8px",
       height: "8px",
       borderRadius: "50%",
-      backgroundColor: "#4CAF50"
+      backgroundColor: "#a9c09c"
     }
   }
 });
@@ -87,16 +94,16 @@ const ProgressBarContainer = styled("div")({
   margin: "24px 0",
   position: "relative",
   padding: "8px",
-  backgroundColor: "rgba(0, 0, 0, 0.2)",
-  borderRadius: "12px",
-  border: "1px solid rgba(255, 255, 255, 0.05)",
+  backgroundColor: "rgba(0, 0, 0, 0.28)",
+  borderRadius: "14px",
+  border: "1px solid rgba(255, 230, 200, 0.08)",
   "& .MuiLinearProgress-root": {
     height: "12px",
     borderRadius: "6px",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: "rgba(255, 238, 216, 0.1)",
     "& .MuiLinearProgress-bar": {
       borderRadius: "6px",
-      background: "linear-gradient(90deg, #4CAF50, #81C784)"
+      background: "linear-gradient(90deg, #96b28a, #e29a63)"
     }
   },
   "& .progress-label": {
@@ -104,8 +111,8 @@ const ProgressBarContainer = styled("div")({
     top: "-24px",
     right: "0",
     fontSize: "0.875rem",
-    color: "rgba(255, 255, 255, 0.7)",
-    fontWeight: "500"
+    color: "#bcac97",
+    fontWeight: "600"
   }
 });
 
@@ -115,35 +122,34 @@ const TimeContainer = styled("div")({
   gap: "20px",
   marginTop: "32px",
   padding: "24px",
-  backgroundColor: "rgba(0, 0, 0, 0.3)",
-  borderRadius: "16px",
-  border: "1px solid rgba(255, 255, 255, 0.05)",
-  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+  backgroundColor: "rgba(0, 0, 0, 0.22)",
+  borderRadius: "20px",
+  border: "1px solid rgba(255, 230, 200, 0.07)",
+  boxShadow: "none"
 });
 
 const TimeItem = styled("div")({
   textAlign: "center",
   padding: "20px",
-  backgroundColor: "rgba(255, 255, 255, 0.05)",
-  borderRadius: "12px",
+  backgroundColor: "rgba(255, 238, 216, 0.06)",
+  borderRadius: "16px",
   transition: "transform 0.2s ease, box-shadow 0.2s ease",
-  border: "1px solid rgba(255, 255, 255, 0.1)",
+  border: "1px solid rgba(255, 230, 200, 0.08)",
   "&:hover": {
     transform: "translateY(-2px)",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)"
+    boxShadow: "0 16px 32px -14px rgba(0, 0, 0, 0.65)"
   },
   "& .label": {
-    fontSize: "0.9rem",
-    color: "rgba(255, 255, 255, 0.7)",
+    fontSize: "0.85rem",
+    color: "#bcac97",
     marginBottom: "12px",
-    fontWeight: "500",
+    fontWeight: "700",
     letterSpacing: "0.5px"
   },
   "& .value": {
     fontSize: "1.5rem",
     fontWeight: "600",
-    color: "#fff",
-    textShadow: "0 2px 4px rgba(0, 0, 0, 0.2)"
+    color: "#f3eadd"
   }
 });
 
@@ -315,11 +321,15 @@ function Stats() {
 
   // Initialize focus time data with any existing sessions
   useEffect(() => {
-    const today = new Date();
-    const formattedDate = today.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    // Merge focus history saved on other devices first (no-op when offline)
+    pullFocusSessions()
+      .catch(() => {})
+      .finally(() => {
+        const today = new Date();
+        const formattedDate = today.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric'
+        });
     
     // Generate last 7 days of data
     const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -345,9 +355,10 @@ function Stats() {
         time: existingData ? existingData.time : 0
       };
     });
-    
-    setFocusTimeData(last7Days);
-    localStorage.setItem('focusTimeData', JSON.stringify(last7Days));
+
+        setFocusTimeData(last7Days);
+        localStorage.setItem('focusTimeData', JSON.stringify(last7Days));
+      });
   }, []);
 
   // Display Last streak update
@@ -391,8 +402,8 @@ function Stats() {
   return (
     <Container>
       <Header>
-        <Typography variant="h3" style={{ 
-          color: "SkyBlue",
+        <Typography variant="h3" style={{
+          color: "#e29a63",
           fontWeight: "600",
           display: "flex",
           alignItems: "center",
@@ -438,7 +449,7 @@ function Stats() {
       <StatsGrid>
         <StatCard>
           <Typography variant="h6" style={{ 
-            color: "#4CAF50", 
+            color: "#a9c09c", 
             marginBottom: "16px",
             display: "flex",
             alignItems: "center",
@@ -460,7 +471,7 @@ function Stats() {
         </StatCard>
         <StatCard>
           <Typography variant="h6" style={{ 
-            color: "#2196F3", 
+            color: "#e29a63", 
             marginBottom: "16px",
             display: "flex",
             alignItems: "center",
@@ -482,7 +493,7 @@ function Stats() {
         </StatCard>
         <StatCard>
           <Typography variant="h6" style={{ 
-            color: "#FFC107", 
+            color: "#e0b061", 
             marginBottom: "16px",
             display: "flex",
             alignItems: "center",
@@ -522,8 +533,8 @@ function Stats() {
             />
           </LottieWrapper>
         </Typography>
-        <Typography variant="body2" style={{ 
-          color: "rgba(255, 255, 255, 0.7)",
+        <Typography variant="body2" style={{
+          color: "#bcac97",
           marginBottom: "24px",
           display: "flex",
           alignItems: "center",
@@ -531,8 +542,8 @@ function Stats() {
         }}>
           Last Streak Update: {lastUpdate}
           <span style={{ 
-            color: "#ff4d4d",
-            backgroundColor: "rgba(255, 77, 77, 0.1)",
+            color: "#e0896f",
+            backgroundColor: "rgba(224, 137, 111, 0.14)",
             padding: "2px 8px",
             borderRadius: "4px",
             fontSize: "0.75rem"
@@ -593,8 +604,8 @@ function Stats() {
           color="primary"
           style={{ 
             marginTop: "24px",
-            backgroundColor: "rgba(33, 150, 243, 0.1)",
-            "&:hover": { backgroundColor: "rgba(33, 150, 243, 0.2)" }
+            backgroundColor: "rgba(226, 154, 99, 0.14)",
+            "&:hover": { backgroundColor: "rgba(226, 154, 99, 0.24)" }
           }}
           aria-label="edit"
         >

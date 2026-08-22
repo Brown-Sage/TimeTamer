@@ -9,47 +9,48 @@ import BarChartIcon from "@mui/icons-material/BarChart";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { useState, useEffect } from "react";
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { pullFocusSessions } from "../lib/sync";
 
 const Container = styled("div")({
   padding: "36px 48px",
-  color: "#fff",
-  fontFamily: "Roboto, sans-serif",
+  color: "#f3eadd",
+  fontFamily: "'Nunito Sans', sans-serif",
   width: "100%",
   margin: "0 auto",
   boxSizing: "border-box"
 });
 
 const GraphCard = styled(Card)({
-  backgroundColor: "rgba(44, 44, 44, 0.8)",
-  color: "#fff",
+  backgroundColor: "rgba(30, 25, 20, 0.6)",
+  backdropFilter: "blur(22px) saturate(1.2)",
+  color: "#f3eadd",
   padding: "30px",
-  borderRadius: "0",
-  border: "1px solid rgba(255, 255, 255, 0.1)",
-  borderLeft: "none",
-  borderRight: "none",
+  borderRadius: "26px",
+  border: "1px solid rgba(255, 230, 200, 0.11)",
   marginBottom: "24px",
   height: "380px",
-  boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.3)",
+  boxShadow: "0 28px 56px -24px rgba(0, 0, 0, 0.65)",
   transition: "transform 0.3s ease, box-shadow 0.3s ease",
   "&:hover": {
     transform: "translateY(-5px)",
-    boxShadow: "0px 12px 24px rgba(0, 0, 0, 0.4)",
+    boxShadow: "0 32px 56px -22px rgba(93, 64, 38, 0.35)",
   }
 });
 
 const StatCard = styled(Card)({
-  backgroundColor: "rgba(44, 44, 44, 0.8)",
-  color: "#fff",
+  backgroundColor: "rgba(30, 25, 20, 0.6)",
+  backdropFilter: "blur(22px) saturate(1.2)",
+  color: "#f3eadd",
   textAlign: "center",
   padding: "30px 24px",
-  borderRadius: "8px",
-  border: "1px solid rgba(255, 255, 255, 0.1)",
+  borderRadius: "26px",
+  border: "1px solid rgba(255, 230, 200, 0.11)",
   height: "100%",
-  boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
+  boxShadow: "0 24px 48px -20px rgba(0, 0, 0, 0.6)",
   transition: "transform 0.3s ease, box-shadow 0.3s ease",
   "&:hover": {
     transform: "translateY(-4px)",
-    boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.3)",
+    boxShadow: "0 26px 44px -20px rgba(93, 64, 38, 0.38)",
   }
 });
 
@@ -69,7 +70,7 @@ const HeaderSection = styled("div")({
   alignItems: "center",
   marginBottom: "32px",
   padding: "0 8px 24px 8px",
-  borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+  borderBottom: "1px solid rgba(255, 230, 200, 0.11)",
 });
 
 export default function Track() {
@@ -174,6 +175,10 @@ export default function Track() {
   // Initialize focus time data with any existing sessions
   useEffect(() => {
     updateFocusTimeData();
+    // Merge focus history saved on other devices (no-op when offline)
+    pullFocusSessions()
+      .then(updateFocusTimeData)
+      .catch(() => {});
   }, []);
 
   // Update stats when focus time data changes
@@ -194,15 +199,15 @@ export default function Track() {
   return (
     <Container className="track-container">
       <HeaderSection>
-        <Typography variant="h4" style={{ 
+        <Typography variant="h4" style={{
           fontWeight: "600",
-          color: "#81C784",
+          color: "#e29a63",
           letterSpacing: "0.5px"
         }}>
           Focus Analytics
         </Typography>
-        <Typography variant="subtitle1" style={{ 
-          color: "rgba(255, 255, 255, 0.6)",
+        <Typography variant="subtitle1" style={{
+          color: "#bcac97",
           fontStyle: "italic"
         }}>
           Tracking your productivity journey
@@ -212,10 +217,10 @@ export default function Track() {
       <Grid container spacing={4} sx={{ mb: 5 }}>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard>
-            <IconContainer sx={{ backgroundColor: alpha('#4CAF50', 0.2) }}>
-              <AccessTimeIcon sx={{ color: '#4CAF50', fontSize: 28 }} />
+            <IconContainer sx={{ backgroundColor: alpha('#a9c09c', 0.18) }}>
+              <AccessTimeIcon sx={{ color: '#a9c09c', fontSize: 28 }} />
             </IconContainer>
-            <Typography variant="h6" color="text.secondary" sx={{ mb: 1, color: "rgba(255, 255, 255, 0.7)" }}>
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 1, color: "#bcac97" }}>
               Today&apos;s Focus
             </Typography>
             <Typography variant="h4" sx={{ fontWeight: 600 }}>
@@ -225,10 +230,10 @@ export default function Track() {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard>
-            <IconContainer sx={{ backgroundColor: alpha('#2196F3', 0.2) }}>
-              <TrendingUpIcon sx={{ color: '#2196F3', fontSize: 28 }} />
+            <IconContainer sx={{ backgroundColor: alpha('#e29a63', 0.16) }}>
+              <TrendingUpIcon sx={{ color: '#e29a63', fontSize: 28 }} />
             </IconContainer>
-            <Typography variant="h6" color="text.secondary" sx={{ mb: 1, color: "rgba(255, 255, 255, 0.7)" }}>
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 1, color: "#bcac97" }}>
               Daily Average
             </Typography>
             <Typography variant="h4" sx={{ fontWeight: 600 }}>
@@ -238,10 +243,10 @@ export default function Track() {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard>
-            <IconContainer sx={{ backgroundColor: alpha('#FFC107', 0.2) }}>
-              <BarChartIcon sx={{ color: '#FFC107', fontSize: 28 }} />
+            <IconContainer sx={{ backgroundColor: alpha('#e0b061', 0.18) }}>
+              <BarChartIcon sx={{ color: '#e0b061', fontSize: 28 }} />
             </IconContainer>
-            <Typography variant="h6" color="text.secondary" sx={{ mb: 1, color: "rgba(255, 255, 255, 0.7)" }}>
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 1, color: "#bcac97" }}>
               Total Focus Time
             </Typography>
             <Typography variant="h4" sx={{ fontWeight: 600 }}>
@@ -251,10 +256,10 @@ export default function Track() {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard>
-            <IconContainer sx={{ backgroundColor: alpha('#9C27B0', 0.2) }}>
-              <EmojiEventsIcon sx={{ color: '#9C27B0', fontSize: 28 }} />
+            <IconContainer sx={{ backgroundColor: alpha('#e0896f', 0.14) }}>
+              <EmojiEventsIcon sx={{ color: '#e0896f', fontSize: 28 }} />
             </IconContainer>
-            <Typography variant="h6" color="text.secondary" sx={{ mb: 1, color: "rgba(255, 255, 255, 0.7)" }}>
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 1, color: "#bcac97" }}>
               Best Day
             </Typography>
             <Typography variant="h4" sx={{ fontWeight: 600 }}>
@@ -265,10 +270,10 @@ export default function Track() {
       </Grid>
 
       <GraphCard>
-        <Typography variant="h6" style={{ 
+        <Typography variant="h6" style={{
           marginBottom: "20px",
           fontWeight: "500",
-          color: "#81C784"
+          color: "#e29a63"
         }}>
           Daily Focus Time (last 7 days)
         </Typography>
@@ -279,55 +284,55 @@ export default function Track() {
           >
             <defs>
               <linearGradient id="colorTime" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#4CAF50" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#4CAF50" stopOpacity={0.1}/>
+                <stop offset="5%" stopColor="#e29a63" stopOpacity={0.5}/>
+                <stop offset="95%" stopColor="#e29a63" stopOpacity={0.04}/>
               </linearGradient>
             </defs>
-            <CartesianGrid 
-              strokeDasharray="3 3" 
-              stroke="rgba(255, 255, 255, 0.1)"
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(255, 238, 216, 0.09)"
               vertical={false}
             />
-            <XAxis 
-              dataKey="date" 
-              stroke="#fff"
-              tick={{ fill: '#fff', fontSize: 12 }}
-              axisLine={{ stroke: 'rgba(255, 255, 255, 0.3)' }}
+            <XAxis
+              dataKey="date"
+              stroke="#b3a48f"
+              tick={{ fill: '#b3a48f', fontSize: 12 }}
+              axisLine={{ stroke: 'rgba(255, 238, 216, 0.18)' }}
               dy={10}
             />
-            <YAxis 
-              stroke="#fff"
-              tick={{ fill: '#fff', fontSize: 12 }}
-              axisLine={{ stroke: 'rgba(255, 255, 255, 0.3)' }}
+            <YAxis
+              stroke="#b3a48f"
+              tick={{ fill: '#b3a48f', fontSize: 12 }}
+              axisLine={{ stroke: 'rgba(255, 238, 216, 0.18)' }}
               tickFormatter={(value) => value === 0 ? '0' : `${value}m`}
               tickMargin={10}
             />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: 'rgba(30, 30, 30, 0.95)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                color: '#fff',
+            <Tooltip
+              contentStyle={{
+                backgroundColor: 'rgba(34, 28, 22, 0.95)',
+                border: '1px solid rgba(255, 230, 200, 0.14)',
+                color: '#f3eadd',
                 fontSize: '14px',
-                borderRadius: '8px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)'
+                borderRadius: '12px',
+                boxShadow: '0 16px 32px -12px rgba(0, 0, 0, 0.7)'
               }}
               formatter={(value) => [`${formatTime(value)}`, 'Focus Time']}
               labelFormatter={(label) => `Date: ${label}`}
-              cursor={{ stroke: 'rgba(255, 255, 255, 0.3)' }}
+              cursor={{ stroke: 'rgba(255, 238, 216, 0.25)' }}
               offset={20}
             />
-            <Area 
-              type="monotone" 
-              dataKey="time" 
-              stroke="#4CAF50" 
+            <Area
+              type="monotone"
+              dataKey="time"
+              stroke="#e29a63"
               strokeWidth={3}
               fillOpacity={1}
               fill="url(#colorTime)"
-              activeDot={{ 
-                r: 8,
-                fill: '#fff',
-                stroke: '#4CAF50',
-                strokeWidth: 2
+              activeDot={{
+                r: 7,
+                fill: '#fffcf6',
+                stroke: '#c2703e',
+                strokeWidth: 2.5
               }}
             />
           </AreaChart>

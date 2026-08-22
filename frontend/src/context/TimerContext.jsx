@@ -1,16 +1,25 @@
-import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { createContext, useCallback, useContext, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
+import alarmSound from '../assets/mixkit-clear-announce-tones-2861.wav';
+import { pushFocusSession } from '../lib/sync';
+
+const DEFAULT_TIMER_SETTINGS = {
+    focus: { minutes: 50, seconds: 0 },
+    break: { minutes: 5, seconds: 0 },
+    longbreak: { minutes: 15, seconds: 0 }
+};
+
+const playAlarm = () => {
+    const audio = new Audio(alarmSound);
+    audio.play().catch(console.error);
+};
 
 const TimerContext = createContext();
 
 export function TimerProvider({ children }) {
     const [timerSettings, setTimerSettings] = useState(() => {
         const savedSettings = localStorage.getItem('timerSettings');
-        return savedSettings ? JSON.parse(savedSettings) : {
-            focus: { minutes: 50, seconds: 0 },
-            break: { minutes: 5, seconds: 0 },
-            longbreak: { minutes: 15, seconds: 0 }
-        };
+        return savedSettings ? JSON.parse(savedSettings) : DEFAULT_TIMER_SETTINGS;
     });
     const [hours, setHours] = useState(0);
     const [minutes, setMinutes] = useState(timerSettings.focus.minutes);
@@ -34,16 +43,20 @@ export function TimerProvider({ children }) {
         webcamDetection: localStorage.getItem('timerWebcamDetection') === 'true'
     });
     const [isUserPresent, setIsUserPresent] = useState(true);
-    const timerIntervalRef = useRef(null);
 
-    // Load saved settings from localStorage on initial mount
-    useEffect(() => {
-        const savedSettings = localStorage.getItem('timerSettings');
-        if (savedSettings) {
-            const parsedSettings = JSON.parse(savedSettings);
-            setTimerSettings(parsedSettings);
-            setMinutes(parsedSettings[mode].minutes);
-        }
+    // Refs mirror the latest state so a single stable interval can read
+    // current values without being recreated every tick.
+    const timeRef = useRef({ hours, minutes, seconds });
+    timeRef.current = { hours, minutes, seconds };
+    const metaRef = useRef({});
+    metaRef.current = { mode, focusCount, settings, timerSettings };
+
+    // Setters and refs are stable, so these callbacks never change identity.
+    const applyMode = useCallback((nextMode) => {
+        const ts = metaRef.current.timerSettings;
+        setMode(nextMode);
+        setMinutes(ts[nextMode].minutes);
+        setSeconds(0);
     }, []);
 
     const startStop = () => {
@@ -53,7 +66,7 @@ export function TimerProvider({ children }) {
     const handleUserPresenceChange = (present) => {
         const wasPaused = !isRunning && !isUserPresent;
         setIsUserPresent(present);
-        
+
         if (present && settings.webcamDetection) {
             if (wasPaused) {
                 setTimeout(() => {
@@ -76,112 +89,116 @@ export function TimerProvider({ children }) {
         });
     };
 
-    const handleFocusSessionCompleted = () => {
-        const nextCount = focusCount + 1;
+    const handleFocusSessionCompleted = useCallback(() => {
+        const { focusCount: currentFocusCount, timerSettings: ts } = metaRef.current;
+        const nextCount = currentFocusCount + 1;
         setFocusCount(nextCount);
-        
-        const today = new Date().toLocaleDateString();
+
+        const completedAt = new Date().toISOString();
+        const today = new Date(completedAt).toLocaleDateString();
         localStorage.setItem('focusSessionData', JSON.stringify({
             count: nextCount,
             lastUpdate: today
         }));
 
-        const sessionMinutes = timerSettings.focus.minutes;
-        const sessionCompletedEvent = new CustomEvent('focusSessionCompleted', {
+        const sessionMinutes = ts.focus.minutes;
+        window.dispatchEvent(new CustomEvent('focusSessionCompleted', {
             detail: {
                 minutes: sessionMinutes,
-                timestamp: new Date().toISOString()
+                timestamp: completedAt
             }
-        });
-        window.dispatchEvent(sessionCompletedEvent);
-        
+        }));
+
         const savedSessions = JSON.parse(localStorage.getItem('focusSessions') || '[]');
         savedSessions.push({
             minutes: sessionMinutes,
-            timestamp: new Date().toISOString()
+            timestamp: completedAt
         });
         localStorage.setItem('focusSessions', JSON.stringify(savedSessions));
-    };
 
-    useEffect(() => {
-        let interval;
-        if (isRunning) {
-            if (isUserPresent || !settings.webcamDetection) {
-                interval = setInterval(() => {
-                    setSeconds((prevSeconds) => {
-                        if (prevSeconds === 0) {
-                            if (minutes === 0) {
-                                if (hours === 0) {
-                                    clearInterval(interval);
-                                    setIsRunning(false);
-                                    if(mode === 'focus'){
-                                        if(settings.alarm) {
-                                            const audio = new Audio('/src/assets/mixkit-clear-announce-tones-2861.wav');
-                                            audio.play().catch(console.error);
-                                        }
-                                        handleFocusSessionCompleted();
-                                        
-                                        if ((focusCount + 1) % 4 === 0) {
-                                            handleLongBreak();
-                                        } else {
-                                            handleBreak();
-                                        }
-                                    } else if(mode === 'break' || mode === 'longbreak'){
-                                        if(settings.alarm) {
-                                            const audio = new Audio('/src/assets/mixkit-clear-announce-tones-2861.wav');
-                                            audio.play().catch(console.error);
-                                        }
-                                        handleFocus();
-                                    }
-                                    return 0;
-                                }
-                                setHours((prevHours) => prevHours - 1);
-                                setMinutes(59);
-                                return 0;
-                            }
-                            setMinutes((prevMinutes) => prevMinutes - 1);
-                            return 59;
-                        }
-                        return prevSeconds - 1;
-                    });
-                }, 1000);
-                timerIntervalRef.current = interval;
+        // Best-effort server sync; offline stays local-only.
+        pushFocusSession({ minutes: sessionMinutes, timestamp: completedAt });
+    }, []);
+
+    const completeSession = useCallback(() => {
+        const { mode: currentMode, settings: currentSettings } = metaRef.current;
+
+        setIsRunning(false);
+
+        if (currentMode === 'focus') {
+            if (currentSettings.alarm) playAlarm();
+            handleFocusSessionCompleted();
+
+            if ((metaRef.current.focusCount + 1) % 4 === 0) {
+                applyMode('longbreak');
+            } else {
+                applyMode('break');
             }
         } else {
-            clearInterval(interval);
-            if (timerIntervalRef.current) {
-                clearInterval(timerIntervalRef.current);
-                timerIntervalRef.current = null;
-            }
+            if (currentSettings.alarm) playAlarm();
+            applyMode('focus');
         }
-        return () => {
-            clearInterval(interval);
-            if (timerIntervalRef.current) {
-                clearInterval(timerIntervalRef.current);
-                timerIntervalRef.current = null;
-            }
+    }, [applyMode, handleFocusSessionCompleted]);
+
+    // Re-hydrate timer settings when settings are restored from the server
+    // (fires on login on a fresh device).
+    useEffect(() => {
+        const handler = () => {
+            try {
+                const saved = localStorage.getItem('timerSettings');
+                if (saved) setTimerSettings(JSON.parse(saved));
+            } catch { /* corrupted value - keep current */ }
+            setSettings({
+                notifications: localStorage.getItem('timerNotifications') === 'true',
+                alarm: localStorage.getItem('timerAlarm') === 'true',
+                webcamDetection: localStorage.getItem('timerWebcamDetection') === 'true'
+            });
         };
-    }, [isRunning, minutes, seconds, hours, mode, focusCount, settings.alarm, isUserPresent, settings.webcamDetection, timerSettings.focus.minutes]);
+        window.addEventListener('timetamer:settings-synced', handler);
+        return () => window.removeEventListener('timetamer:settings-synced', handler);
+    }, []);
+
+    // One interval for the whole run; per-tick values come from refs so this
+    // effect only re-runs when the run state itself changes.
+    useEffect(() => {
+        if (!isRunning) return undefined;
+        if (settings.webcamDetection && !isUserPresent) return undefined;
+
+        const interval = setInterval(() => {
+            const { hours: h, minutes: m, seconds: s } = timeRef.current;
+
+            if (s > 0) {
+                timeRef.current = { hours: h, minutes: m, seconds: s - 1 };
+            } else if (m > 0) {
+                timeRef.current = { hours: h, minutes: m - 1, seconds: 59 };
+            } else if (h > 0) {
+                timeRef.current = { hours: h - 1, minutes: 59, seconds: 0 };
+            } else {
+                completeSession();
+                return;
+            }
+
+            setHours(timeRef.current.hours);
+            setMinutes(timeRef.current.minutes);
+            setSeconds(timeRef.current.seconds);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [isRunning, isUserPresent, settings.webcamDetection, completeSession]);
 
     const handleFocus = () => {
         setIsRunning(false);
-        setMode('focus');
-        setMinutes(timerSettings.focus.minutes);
-        setSeconds(0);
+        applyMode('focus');
     };
 
     const handleBreak = () => {
         setIsRunning(false);
-        setMode('break');
-        setMinutes(timerSettings.break.minutes);
-        setSeconds(0);
+        applyMode('break');
     };
 
     const handleLongBreak = () => {
         setIsRunning(false);
-        setMode('longbreak');
-        setMinutes(timerSettings.longbreak.minutes);
-        setSeconds(0);
+        applyMode('longbreak');
     };
 
     const value = {
@@ -223,4 +240,4 @@ export function useTimer() {
         throw new Error('useTimer must be used within a TimerProvider');
     }
     return context;
-} 
+}
