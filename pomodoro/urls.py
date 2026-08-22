@@ -27,7 +27,7 @@ from core.controllers.SyncController import (
 )
 from django.conf import settings
 from django.conf.urls.static import static
-from core.views import csrf, index
+from core.views import api_not_found, csrf, index
 
 from core.controllers.SpotifyController import (
     SpotifyCallbackView,
@@ -62,6 +62,8 @@ urlpatterns = [
     path('api/spotify/status/', SpotifyStatusView.as_view(), name='spotify_status'),
     path('api/spotify/disconnect/', SpotifyDisconnectView.as_view(), name='spotify_disconnect'),
 
+    # unknown API paths get a JSON 404, everything else is the SPA
+    re_path(r'^api/', api_not_found),
     re_path(r'^.*$', index),
 ]
 # Serve static files

@@ -92,6 +92,10 @@ class SpotifyCallbackView(View):
     http_method_names = ['get']
 
     def get(self, request):
+        unauthorized = _require_auth(request)
+        if unauthorized:
+            return unauthorized
+
         error = request.GET.get('error')
         if error:
             return JsonResponse({'message': f'Spotify authorization failed: {error}'}, status=400)
@@ -106,8 +110,6 @@ class SpotifyCallbackView(View):
             return JsonResponse({'message': 'Missing authorization code'}, status=400)
         if not spotify_configured():
             return JsonResponse({'message': 'Spotify is not configured on the server'}, status=503)
-        if not request.user.is_authenticated:
-            return JsonResponse({'message': 'Authentication required'}, status=401)
 
         tokens = self._exchange_code(code, request)
         if tokens is None:
@@ -116,7 +118,7 @@ class SpotifyCallbackView(View):
         Setting.objects.update_or_create(
             user=request.user,
             key=TOKENS_KEY,
-            defaults={'value': json.dumps(tokens)},
+            defaults={'value': json.dumps(tokens), 'deleted_at': None},
         )
         # Back to the SPA; it can re-check api/spotify/status/
         return JsonResponse({'detail': 'Spotify connected'})

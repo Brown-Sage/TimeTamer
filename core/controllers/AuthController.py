@@ -2,35 +2,20 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.views import View
 
-
-def _params(request):
-    """Accept both form-encoded and JSON bodies."""
-    import json
-
-    if request.content_type == 'application/json':
-        try:
-            data = json.loads(request.body or '{}')
-            if isinstance(data, dict):
-                return {k: v for k, v in data.items() if isinstance(v, str)}
-        except json.JSONDecodeError:
-            pass
-        return {}
-    return request.POST
+from core.controllers.common import parse_params
 
 
 class AuthController(View):
     http_method_names = ['post', 'delete']
 
     def post(self, request):
-        params = _params(request)
+        params = parse_params(request)
         username = params.get('username')
         password = params.get('password')
 
-        # Authenticate the user using the custom User model
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
-            # User authenticated, log them in
             login(request, user)
             return JsonResponse({
                 'message': 'Login successful',

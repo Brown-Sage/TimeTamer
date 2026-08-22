@@ -1,30 +1,20 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.views import View
 from django.db import IntegrityError
 
-User = get_user_model()  # This ensures you use the custom User model
+from core.controllers.common import parse_params
 
+User = get_user_model()
 
-def _params(request):
-    """Accept both form-encoded and JSON bodies."""
-    import json
-
-    if request.content_type == 'application/json':
-        try:
-            data = json.loads(request.body or '{}')
-            if isinstance(data, dict):
-                return {k: v for k, v in data.items() if isinstance(v, str)}
-        except json.JSONDecodeError:
-            pass
-        return {}
-    return request.POST
+EMAIL_MAX_LENGTH = 254
 
 
 class UserController(View):
     def post(self, request):
-        # Get inputs from the request (form-encoded or JSON)
-        params = _params(request)
+        params = parse_params(request)
         email = params.get('email')
         username = params.get('username')
         password = params.get('password')
@@ -32,8 +22,28 @@ class UserController(View):
         if not email or not username or not password:
             return JsonResponse({'message': 'All fields are required'}, status=400)
 
+        if len(email) > EMAIL_MAX_LENGTH or '@' not in email:
+            return JsonResponse({'message': 'Enter a valid email address'}, status=400)
+
+        # The model does not enforce unique emails; the login key is the
+        # username, but silently sharing an email across accounts invites
+        # confusion (and password-reset ambiguity later).
+        if User.objects.filter(email__iexact=email).exclude(username=username).exists():
+            return JsonResponse({'message': 'Email is already registered'}, status=400)
+
         try:
-            # Create a new user instance
+            # Pass an unsaved user so similarity validators can compare
+            # against the chosen username/email.
+            validate_password(password, user=User(
+                username=username, email=email,
+            ))
+        except ValidationError as exc:
+            return JsonResponse({
+                'message': 'Password does not meet requirements',
+                'errors': list(exc.messages),
+            }, status=400)
+
+        try:
             user = User.objects.create_user(
                 username=username,
                 email=email,
@@ -49,8 +59,7 @@ class UserController(View):
             }, status=201)
 
         except IntegrityError:
-            # Return error message if username or email already exists
-            return JsonResponse({'message': 'Username or email already exists'}, status=400)
+            return JsonResponse({'message': 'Username already exists'}, status=400)
 
     def get(self, request):
         if not request.user.is_authenticated:
@@ -62,6 +71,6 @@ class UserController(View):
             'uid': str(user.uid),
             'username': user.username,
             'email': user.email,
-            'phone': user.phone if hasattr(user, 'phone') else None,
-            'role': user.role.name if hasattr(user, 'role') and user.role else None,
+            'phone': user.phone,
+            'role': user.role.name if user.role else None,
         })

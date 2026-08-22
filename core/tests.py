@@ -114,6 +114,24 @@ class LoggedInMixin:
             path, data=_json.dumps(payload), content_type='application/json'
         )
 
+    def task(self, id_, **overrides):
+        base = {
+            'client_id': str(id_),
+            'text': f'Task {id_}',
+            'completed': False,
+            'completed_at': None,
+            'priority': 'high',
+            'duration': 25,
+            'createdAt': '2026-08-22T09:00:00.000Z',
+        }
+        base.update(overrides)
+        if base['completed'] and not base['completed_at']:
+            base['completed_at'] = '2026-08-22T09:30:00.000Z'
+        return base
+
+    def note(self, id_, **overrides):
+        return {'client_id': str(id_), 'text': f'Note {id_}', 'timestamp': '8/22/26, 9:00 AM', **overrides}
+
 
 class AuthenticatedApiTests(LoggedInMixin, TestCase):
     """Sessions/settings/tasks/notes endpoint behavior."""
@@ -200,21 +218,6 @@ class AuthenticatedApiTests(LoggedInMixin, TestCase):
 
     # ---- tasks ----
 
-    def task(self, id_, **overrides):
-        base = {
-            'client_id': str(id_),
-            'text': f'Task {id_}',
-            'completed': False,
-            'completed_at': None,
-            'priority': 'high',
-            'duration': 25,
-            'createdAt': '2026-08-22T09:00:00.000Z',
-        }
-        base.update(overrides)
-        if base['completed'] and not base['completed_at']:
-            base['completed_at'] = '2026-08-22T09:30:00.000Z'
-        return base
-
     def test_tasks_require_auth(self):
         anon = Client()
         self.assertEqual(anon.get('/api/tasks/').status_code, 401)
@@ -290,9 +293,6 @@ class AuthenticatedApiTests(LoggedInMixin, TestCase):
 
     # ---- notes ----
 
-    def note(self, id_, **overrides):
-        return {'client_id': str(id_), 'text': f'Note {id_}', 'timestamp': '8/22/26, 9:00 AM', **overrides}
-
     def test_notes_require_auth(self):
         anon = Client()
         self.assertEqual(anon.get('/api/notes/').status_code, 401)
@@ -365,3 +365,98 @@ class SpotifyOAuthTests(LoggedInMixin, TestCase):
 
     def test_disconnect_requires_auth(self):
         self.assertEqual(Client().delete('/api/spotify/disconnect/').status_code, 401)
+
+
+class BackendHardeningTests(LoggedInMixin, TestCase):
+    """Regression tests for the backend audit fixes."""
+
+    def test_unknown_api_paths_return_json_404(self):
+        resp = self.client.get('/api/nonexistent/')
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.json()['message'], 'API endpoint not found')
+        self.assertEqual(resp['Content-Type'], 'application/json')
+
+    def test_weak_password_rejected_with_reasons(self):
+        resp = self.client.post('/api/register/', {
+            'email': 'weak@example.com', 'username': 'weakling', 'password': '123',
+        })
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('errors', resp.json())
+
+    def test_password_similar_to_username_rejected(self):
+        resp = self.client.post('/api/register/', {
+            'email': 'lazy@example.com', 'username': 'lazycat', 'password': 'lazycat123',
+        })
+        self.assertEqual(resp.status_code, 400)
+
+    def test_duplicate_email_rejected_across_usernames(self):
+        self.client.post('/api/register/', {
+            'email': 'shared@example.com', 'username': 'firstuser', 'password': 'sup3r-secret-pass',
+        })
+        other = Client()
+        resp = other.post('/api/register/', {
+            'email': 'shared@example.com', 'username': 'seconduser', 'password': 'sup3r-secret-pass',
+        })
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('Email', resp.json()['message'])
+
+    def test_invalid_email_format_rejected(self):
+        resp = self.client.post('/api/register/', {
+            'email': 'not-an-email', 'username': 'xuser', 'password': 'sup3r-secret-pass',
+        })
+        self.assertEqual(resp.status_code, 400)
+
+    def test_tasks_get_excludes_legacy_null_client_rows(self):
+        # Simulate a pre-sync-era row: no client_id, no extra.
+        from core.models import User as U
+        legacy = U.objects.get(username='syncer').tasks.create(
+            title='legacy row', client_id=None,
+        )
+        self.json_put('/api/tasks/', {'tasks': [self.task(1)]})
+
+        rows = self.client.get('/api/tasks/').json()['tasks']
+        self.assertEqual([r['client_id'] for r in rows], ['1'])
+
+        # The legacy row survives server-side; it just is not served.
+        self.assertTrue(U.objects.filter(tasks__id=legacy.id).exists())
+
+    def test_settings_put_revives_soft_deleted_row(self):
+        from core.models import Setting
+        user = self.client.session.get('_auth_user_id')
+        Setting.objects.create(
+            user_id=user, key='timerAlarm', value='true', deleted_at='2026-01-01T00:00:00Z',
+        )
+        resp = self.json_put('/api/settings/', {'settings': {'timerAlarm': False}})
+        self.assertEqual(resp.status_code, 200)
+
+        row = Setting.objects.get(user_id=user, key='timerAlarm')
+        self.assertIsNone(row.deleted_at)
+        self.assertIn('timerAlarm', self.client.get('/api/settings/').json()['settings'])
+
+    def test_spotify_tokens_never_leak_into_settings_payload(self):
+        from core.models import Setting
+        user = self.client.session.get('_auth_user_id')
+        Setting.objects.create(user_id=user, key='spotify_tokens', value='{"a":1}')
+        Setting.objects.create(user_id=user, key='timerAlarm', value='true')
+
+        payload = self.client.get('/api/settings/').json()['settings']
+        self.assertNotIn('spotify_tokens', payload)
+        self.assertIn('timerAlarm', payload)
+
+    def test_session_push_without_client_id_appends_every_time(self):
+        body = {'minutes': 30, 'timestamp': '2026-08-22T11:00:00.000Z'}
+        first = self.json_post('/api/sessions/', body)
+        second = self.json_post('/api/sessions/', body)
+        self.assertEqual(first.json()['created'], 1)
+        self.assertEqual(second.json()['created'], 1)
+
+    def test_task_upsert_survives_duplicate_client_id_in_batch(self):
+        resp = self.json_put('/api/tasks/', {'tasks': [
+            self.task(5, text='first'),
+            self.task(5, text='second'),
+        ]})
+        self.assertEqual(resp.status_code, 200)
+
+        rows = self.client.get('/api/tasks/').json()['tasks']
+        self.assertEqual(len(rows), 1)
+        self.assertIn(rows[0]['title'], ('first', 'second'))

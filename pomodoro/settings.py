@@ -50,6 +50,16 @@ CSRF_TRUSTED_ORIGINS = [
 
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
+# Hardening for non-DEBUG deployments (behind a TLS-terminating proxy).
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30  # 30 days; raise once confident
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    # Opt-in: only when TLS ends on Django itself, not at a proxy.
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False').lower() == 'true'
+
 # Spotify OAuth (see core/controllers/SpotifyController.py).
 # Missing credentials disable the feature gracefully (503 from the endpoints).
 SPOTIFY_CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID')

@@ -5,6 +5,8 @@ from django.http import JsonResponse
 from django.utils.dateparse import parse_datetime
 from django.views import View
 
+from django.db import IntegrityError, transaction
+
 from core.models import FocusSession, Note, Setting, Task
 
 
@@ -81,18 +83,30 @@ class SessionController(View):
             if django.utils.timezone.is_naive(completed_at):
                 completed_at = django.utils.timezone.make_aware(completed_at)
 
-            if client_id and FocusSession.objects.filter(
-                    user=request.user, client_id=client_id).exists():
+            # Race-safe append: with a client_id, concurrent duplicate pushes
+            # resolve to one row instead of crashing; without one, every
+            # session is appended (unique constraints ignore NULLs).
+            if client_id:
+                _, was_created = FocusSession.objects.get_or_create(
+                    user=request.user,
+                    client_id=client_id,
+                    defaults={
+                        'minutes': minutes,
+                        'completed_at': completed_at,
+                    },
+                )
+            else:
+                FocusSession.objects.create(
+                    user=request.user,
+                    minutes=minutes,
+                    completed_at=completed_at,
+                    client_id=None,
+                )
+                was_created = True
+            if was_created:
+                created += 1
+            else:
                 skipped += 1
-                continue
-
-            FocusSession.objects.create(
-                user=request.user,
-                minutes=minutes,
-                completed_at=completed_at,
-                client_id=client_id,
-            )
-            created += 1
 
         return JsonResponse({'created': created, 'skipped': skipped}, status=201)
 
@@ -109,6 +123,10 @@ class SettingController(View):
 
         settings_map = {}
         for setting in Setting.objects.filter(user=request.user, deleted_at__isnull=True):
+            # OAuth tokens live here too but are server-internal state;
+            # they are never part of the client settings payload.
+            if setting.key.startswith('spotify_'):
+                continue
             try:
                 settings_map[setting.key] = json.loads(setting.value)
             except (json.JSONDecodeError, TypeError):
@@ -129,7 +147,11 @@ class SettingController(View):
             Setting.objects.update_or_create(
                 user=request.user,
                 key=str(key)[:255],
-                defaults={'value': json.dumps(value)},
+                defaults={
+                    'value': json.dumps(value),
+                    # Reviving a soft-deleted row must make it visible again.
+                    'deleted_at': None,
+                },
             )
         return JsonResponse({'saved': len(settings_map)})
 
@@ -178,7 +200,12 @@ class CollectionSyncController(View):
         if unauthorized:
             return unauthorized
 
-        items = [self.serialize(o) for o in self.model.objects.filter(user=request.user)[:5000]]
+        # Rows without a client_id predate the sync protocol (or were written
+        # out-of-band); the client cannot address them, so they are excluded.
+        items = [
+            self.serialize(o)
+            for o in self.model.objects.filter(user=request.user, client_id__isnull=False)[:5000]
+        ]
         return JsonResponse({self.payload_key: items})
 
     def put(self, request):
@@ -211,14 +238,23 @@ class CollectionSyncController(View):
                 continue
 
             client_id, fields, extra = row
-            seen_client_ids.add(client_id)
 
-            defaults = {'extra': extra or None}
-            defaults.update(fields)
-            self.model.objects.update_or_create(
-                user=request.user, client_id=client_id, defaults=defaults,
-            )
-            saved += 1
+            # A duplicate client_id inside one batch (or a concurrent PUT of
+            # the same item) must not crash the whole request: last write wins.
+            try:
+                with transaction.atomic():
+                    if client_id in seen_client_ids:
+                        raise IntegrityError
+                    seen_client_ids.add(client_id)
+
+                    defaults = {'extra': extra or None}
+                    defaults.update(fields)
+                    self.model.objects.update_or_create(
+                        user=request.user, client_id=client_id, defaults=defaults,
+                    )
+                    saved += 1
+            except IntegrityError:
+                skipped += 1
 
         # Anything this user has on the server that the payload no longer
         # mentions was deleted on some device: drop it here too.
