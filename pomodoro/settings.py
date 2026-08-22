@@ -23,12 +23,32 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-$k_i1br(j&_y@ewc3o$b6&9_i4#n2y87z#pqtpxn&(rt=!m!)8'
+SECRET_KEY = os.getenv(
+    'SECRET_KEY',
+    'django-insecure-$k_i1br(j&_y@ewc3o$b6&9_i4#n2y87z#pqtpxn&(rt=!m!)8'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = ['0.0.0.0','127.0.0.1','192.168.2.43','localhost']
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv(
+        'ALLOWED_HOSTS', '0.0.0.0,127.0.0.1,192.168.2.43,localhost'
+    ).split(',')
+    if host.strip()
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        'CSRF_TRUSTED_ORIGINS',
+        'http://127.0.0.1:8000,http://192.168.2.43:8000,http://localhost:8000'
+    ).split(',')
+    if origin.strip()
+]
+
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
 
 # Application definition
@@ -103,7 +123,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
-print(DATABASES)
 
 AUTH_USER_MODEL = 'core.User'
 
