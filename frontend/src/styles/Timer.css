@@ -9,14 +9,9 @@
     box-sizing: border-box;
     flex-direction: column;
     background: var(--surface);
-    backdrop-filter: blur(26px) saturate(1.25);
-    -webkit-backdrop-filter: blur(26px) saturate(1.25);
     border: 1px solid var(--line);
-    border-radius: 28px;
-    box-shadow:
-        0 44px 90px -32px rgba(0, 0, 0, 0.8),
-        0 8px 24px rgba(226, 154, 99, 0.07),
-        inset 0 1px 0 rgba(255, 232, 204, 0.09);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-pop);
 }
 
 .timer-container {
@@ -56,8 +51,8 @@
 }
 
 .timer-control-btn:hover {
-    color: #fff6ea;
-    background: rgba(255, 238, 216, 0.12);
+    color: var(--ink);
+    background: var(--surface-dim);
     transform: translateY(-1px);
 }
 
@@ -70,12 +65,10 @@
     position: absolute;
     top: 52px;
     left: 16px;
-    background: rgba(30, 25, 20, 0.92);
-    backdrop-filter: blur(24px) saturate(1.2);
-    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+    background: var(--surface-strong);
     border-radius: var(--radius-md);
     padding: 16px;
-    box-shadow: 0 32px 64px -24px rgba(0, 0, 0, 0.75);
+    box-shadow: var(--shadow-pop);
     z-index: 100;
     min-width: 230px;
     border: 1px solid var(--line);
@@ -136,8 +129,8 @@
     display: flex;
     width: 100%;
     gap: 5px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--line-soft);
+    background: var(--surface-dim);
+    border: 1px solid transparent;
     border-radius: 999px;
     padding: 5px;
     box-sizing: border-box;
@@ -159,18 +152,17 @@
 
 .child1:hover {
     color: var(--ink-soft);
-    background: rgba(255, 238, 216, 0.06);
 }
 
 .child1.active {
-    background: linear-gradient(135deg, rgba(226, 154, 99, 0.9), rgba(201, 126, 70, 0.9));
-    color: #241a12;
-    box-shadow: 0 10px 22px -10px rgba(226, 154, 99, 0.55);
+    background: var(--accent);
+    color: #fdf6ef;
+    box-shadow: 0 8px 18px -10px rgba(194, 94, 58, 0.6);
 }
 
 .child1.active:hover {
-    background: linear-gradient(135deg, rgba(226, 154, 99, 1), rgba(201, 126, 70, 1));
-    color: #241a12;
+    background: var(--accent-deep);
+    color: #fdf6ef;
 }
 
 /* ---------- Clock ---------- */
@@ -180,8 +172,7 @@
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.03em;
-    color: #fbf3e8;
-    text-shadow: 0 4px 30px rgba(226, 154, 99, 0.18);
+    color: var(--ink);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -200,14 +191,13 @@
 
 #timer span:hover {
     color: var(--accent);
-    text-shadow: 0 0 26px rgba(226, 154, 99, 0.45);
 }
 
 .timer-input {
     background: transparent;
     border: none;
     border-bottom: 2px solid var(--accent);
-    color: #fbf3e8;
+    color: var(--ink);
     font-family: var(--font-display);
     font-size: 4.7rem;
     font-weight: 600;
@@ -219,7 +209,7 @@
 }
 
 .timer-input:focus {
-    border-color: #f0b585;
+    border-color: var(--accent-deep);
 }
 
 .timer-input::-webkit-inner-spin-button,
@@ -246,10 +236,10 @@
 
 #startStopBtn {
     align-items: center;
-    background: linear-gradient(135deg, #e29a63, #c97e46);
+    background: var(--accent);
     border: none;
     border-radius: 999px;
-    color: #241a12;
+    color: #fdf6ef;
     cursor: pointer;
     display: flex;
     font-size: 0.95rem;
@@ -262,7 +252,7 @@
     text-align: center;
     margin: 6px auto 0;
     min-width: 152px;
-    box-shadow: 0 18px 34px -14px rgba(226, 154, 99, 0.6);
+    box-shadow: 0 14px 26px -14px rgba(194, 94, 58, 0.65);
     transition:
         transform 0.2s ease,
         box-shadow 0.2s ease,
@@ -271,8 +261,8 @@
 
 #startStopBtn:hover {
     transform: translateY(-2px);
-    filter: brightness(1.06);
-    box-shadow: 0 22px 40px -16px rgba(226, 154, 99, 0.7);
+    background: var(--accent-deep);
+    box-shadow: 0 18px 30px -16px rgba(194, 94, 58, 0.75);
 }
 
 #startStopBtn:active {
@@ -289,7 +279,7 @@
     font-size: 0.82rem;
     font-weight: 700;
     text-align: center;
-    border: 1px solid rgba(224, 137, 111, 0.28);
+    border: 1px solid rgba(173, 68, 51, 0.25);
     max-width: 80%;
     animation: pulseNotice 2s infinite alternate;
 }

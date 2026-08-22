@@ -7,12 +7,10 @@
     display: flex;
     height: 62px;
     width: min(26rem, calc(100vw - 48px));
-    background: rgba(28, 23, 18, 0.72);
-    backdrop-filter: blur(26px) saturate(1.25);
-    -webkit-backdrop-filter: blur(26px) saturate(1.25);
+    background: var(--surface-strong);
     border: 1px solid var(--line);
     border-radius: 999px;
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--shadow-pop);
     justify-content: space-around;
     align-items: center;
     padding: 0 10px;
@@ -23,7 +21,7 @@
 .bottom p {
     margin: 2px 0 0;
     font-size: 0.62rem;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: inherit;
@@ -42,7 +40,7 @@
 }
 
 .stats:hover {
-    color: #f4c9a2;
+    color: var(--accent-deep);
     background: var(--accent-soft);
     transform: translateY(-3px);
 }
