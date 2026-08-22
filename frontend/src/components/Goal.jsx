@@ -1,15 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { IoMdAdd } from 'react-icons/io';
 import { FaTrash } from 'react-icons/fa';
 import '../styles/Goal.css';
 import alarmsound from "../assets/mixkit-clear-announce-tones-2861.wav";
+import { useAuth } from '../context/AuthContext';
+import { pullTasks, pushTasks } from '../lib/sync';
 
 function Goal() {
+  const { user } = useAuth();
   // Initialize tasks from localStorage
   const [tasks, setTasks] = useState(() => {
     const savedTasks = localStorage.getItem('tasks');
     return savedTasks ? JSON.parse(savedTasks) : [];
   });
+  const pushTimer = useRef(null);
   const [newTask, setNewTask] = useState('');
   const [todayStats, setTodayStats] = useState({ completed: 0, total: 0 });
   const [isExpanded, setIsExpanded] = useState(false);
@@ -26,6 +30,28 @@ function Goal() {
     localStorage.setItem('tasks', JSON.stringify(tasks));
     updateTodayStats(tasks);
   }, [tasks]);
+
+  // Pull server-side tasks once logged in (fills ids this device lacks),
+  // then keep the collection mirrored with a debounced whole-array push.
+  const syncedOnce = useRef(false);
+  useEffect(() => {
+    if (!user) { syncedOnce.current = false; return undefined; }
+    let cancelled = false;
+    pullTasks().then((merged) => {
+      if (!cancelled && Array.isArray(merged)) {
+        setTasks(merged);
+        syncedOnce.current = true;
+      }
+    });
+    return () => { cancelled = true; };
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || !syncedOnce.current) return undefined;
+    clearTimeout(pushTimer.current);
+    pushTimer.current = setTimeout(() => pushTasks(tasks), 800);
+    return () => clearTimeout(pushTimer.current);
+  }, [tasks, user]);
 
   // Timer update effect
   useEffect(() => {

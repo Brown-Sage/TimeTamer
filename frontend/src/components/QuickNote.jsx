@@ -1,96 +1,62 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaStickyNote, FaPlus, FaTrash, FaMinusCircle } from 'react-icons/fa';
 import '../styles/QuickNote.css';
+import { useAuth } from '../context/AuthContext';
+import { pullNotes, pushNotes } from '../lib/sync';
 
 // Use a more unique key for localStorage
 const STORAGE_KEY = 'timetamer_quick_notes';
 
 export default function QuickNote() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(true);
-  const [notes, setNotes] = useState([]);
-  const [newNote, setNewNote] = useState('');
-  const [loaded, setLoaded] = useState(false);
-
-  // Load saved notes from localStorage when component mounts
-  useEffect(() => {
+  const [notes, setNotes] = useState(() => {
     try {
-      // Check all localStorage keys for debugging
-      console.log('All localStorage keys:', Object.keys(localStorage));
-      
       const savedNotes = localStorage.getItem(STORAGE_KEY);
-      console.log('Loading notes from localStorage key:', STORAGE_KEY);
-      console.log('Raw saved notes data:', savedNotes);
-      
-      if (savedNotes && savedNotes !== 'undefined' && savedNotes !== 'null') {
-        try {
-          const parsedNotes = JSON.parse(savedNotes);
-          console.log('Successfully parsed notes:', parsedNotes);
-          
-          if (Array.isArray(parsedNotes)) {
-            setNotes(parsedNotes);
-            console.log('Notes loaded successfully');
-          } else {
-            console.error('Parsed notes is not an array:', parsedNotes);
-            setNotes([]);
-          }
-        } catch (e) {
-          console.error('Error parsing saved notes:', e);
-          setNotes([]);
-        }
-      } else {
-        console.log('No saved notes found or invalid data');
-        setNotes([]);
-      }
+      if (!savedNotes || savedNotes === 'undefined' || savedNotes === 'null') return [];
+      const parsed = JSON.parse(savedNotes);
+      return Array.isArray(parsed) ? parsed : [];
     } catch (e) {
-      console.error('Error in loading effect:', e);
-    } finally {
-      setLoaded(true);
+      console.error('Error loading notes:', e);
+      return [];
     }
-  }, []);
+  });
+  const [newNote, setNewNote] = useState('');
+  const pushTimer = useRef(null);
 
   // Save notes to localStorage whenever they change
   useEffect(() => {
-    // Only save after initial load to prevent overwriting with empty array
-    if (loaded) {
-      try {
-        console.log('Saving notes to localStorage:', notes);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-        console.log('Save operation completed');
-      } catch (e) {
-        console.error('Error saving notes:', e);
-      }
-    }
-  }, [notes, loaded]);
-
-  // Force save notes - can be called before page unload or when needed
-  const saveNotes = () => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-      console.log('Notes manually saved to localStorage');
     } catch (e) {
-      console.error('Error manually saving notes:', e);
+      console.error('Error saving notes:', e);
     }
-  };
+  }, [notes]);
 
-  // Add window unload handler to ensure notes are saved when page refreshes
+  // Pull server-side notes after login, then mirror changes with a
+  // debounced whole-array push (same pattern as tasks).
+  const syncedOnce = useRef(false);
   useEffect(() => {
-    if (!loaded) return; // Skip until initial load is complete
-    
-    const handleBeforeUnload = () => {
-      saveNotes();
-    };
-    
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [notes, loaded]);
+    if (!user) { syncedOnce.current = false; return undefined; }
+    let cancelled = false;
+    pullNotes().then((merged) => {
+      if (!cancelled && Array.isArray(merged)) {
+        setNotes(merged);
+        syncedOnce.current = true;
+      }
+    });
+    return () => { cancelled = true; };
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || !syncedOnce.current) return undefined;
+    clearTimeout(pushTimer.current);
+    pushTimer.current = setTimeout(() => pushNotes(notes), 800);
+    return () => clearTimeout(pushTimer.current);
+  }, [notes, user]);
 
   const toggleNotes = () => {
     setIsOpen(!isOpen);
-    // Save notes when toggling to ensure latest state is saved
-    if (loaded) saveNotes();
   };
 
   const addNote = () => {

@@ -56,6 +56,110 @@ function bucketKey(timestamp) {
     return Number.isNaN(ms) ? String(timestamp) : String(Math.floor(ms / 60000))
 }
 
+// ---- Tasks ----------------------------------------------------------------
+
+const TASKS_KEY = 'tasks'
+const NOTES_KEY = 'timetamer_quick_notes'
+
+// Server row -> local task object shape used by Goal.jsx
+function serverTaskToLocal(row) {
+    const rawId = String(row.client_id ?? '')
+    const id = /^\d+$/.test(rawId) ? Number(rawId) : rawId
+    const extra = typeof row.extra === 'object' && row.extra !== null ? row.extra : {}
+    return {
+        ...extra,
+        id,
+        text: row.title,
+        completed: Boolean(row.completed),
+        completedAt: row.completed_at || null,
+    }
+}
+
+// Merge server-side tasks into the local list. Local wins on conflicts;
+// the server only fills in ids this device has never seen.
+export async function pullTasks() {
+    let server = []
+    try {
+        const { data } = await api.get('api/tasks/')
+        server = Array.isArray(data?.tasks) ? data.tasks : []
+    } catch {
+        return null // offline/anon - keep local as-is
+    }
+
+    const local = JSON.parse(localStorage.getItem(TASKS_KEY) || '[]')
+    const known = new Set(local.map((t) => String(t.id)))
+    let added = 0
+    for (const row of server) {
+        if (known.has(String(row.client_id))) continue
+        local.push(serverTaskToLocal(row))
+        added += 1
+    }
+    if (added > 0) {
+        localStorage.setItem(TASKS_KEY, JSON.stringify(local))
+    }
+    return local
+}
+
+// Push the whole collection (debounced by callers). Fire-and-forget.
+export function pushTasks(tasks) {
+    return api.put('api/tasks/', {
+        tasks: (Array.isArray(tasks) ? tasks : []).map((t) => ({
+            ...t,
+            client_id: String(t.id),
+            text: t.text,
+            title: t.text,
+            completed: Boolean(t.completed),
+            completed_at: t.completedAt || null,
+        })),
+    }).catch(() => {})
+}
+
+// ---- Notes ----------------------------------------------------------------
+
+function serverNoteToLocal(row) {
+    const rawId = String(row.client_id ?? '')
+    const id = /^\d+$/.test(rawId) ? Number(rawId) : rawId
+    const { timestamp } = typeof row.extra === 'object' && row.extra !== null ? row.extra : {}
+    return {
+        id,
+        text: row.text,
+        timestamp: timestamp || '',
+    }
+}
+
+export async function pullNotes() {
+    let server = []
+    try {
+        const { data } = await api.get('api/notes/')
+        server = Array.isArray(data?.notes) ? data.notes : []
+    } catch {
+        return null
+    }
+
+    const local = JSON.parse(localStorage.getItem(NOTES_KEY) || '[]')
+    const known = new Set(local.map((n) => String(n.id)))
+    let added = 0
+    for (const row of server) {
+        if (known.has(String(row.client_id))) continue
+        local.push(serverNoteToLocal(row))
+        added += 1
+    }
+    if (added > 0) {
+        localStorage.setItem(NOTES_KEY, JSON.stringify(local))
+    }
+    return local
+}
+
+export function pushNotes(notes) {
+    return api.put('api/notes/', {
+        notes: (Array.isArray(notes) ? notes : []).map((n) => ({
+            ...n,
+            client_id: String(n.id),
+            text: n.text,
+        })),
+    }).catch(() => {})
+}
+
 // ---- Settings -------------------------------------------------------------
 
 // Restore settings saved on another device. Only fills keys the server has.
