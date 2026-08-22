@@ -31,8 +31,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -192,3 +192,6 @@ dist-ssr
 *.sln
 *.sw?
 src/assets/vid_gif/*
+
+# Local AI session progress notes (not part of the repo)
+progress.md
