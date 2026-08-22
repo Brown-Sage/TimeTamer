@@ -19,15 +19,14 @@ from django.urls import path,re_path
 from django.views.generic import TemplateView
 from core.controllers.AuthController import AuthController
 from core.controllers.UserController import UserController
+from core.controllers.SyncController import SessionController, SettingController
 from django.conf import settings
 from django.conf.urls.static import static
-from core.views import index
-import os
-# Function to return React build path dynamically
-def react_build_path(template_name):
-    return os.path.join("frontend", "dist", template_name)
+from core.views import csrf, index
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/csrf/', csrf, name='csrf'),
     path('api/register/', UserController.as_view(), name='register'),
     path('api/login/', AuthController.as_view(), name='login'),
     path('api/logout/', AuthController.as_view(), name='delete'),
@@ -36,9 +35,11 @@ urlpatterns = [
 
     #get user data;
     path('api/user/', UserController.as_view(), name='user_data'),
-    # path('api/user/<str:username>/', UserController.as_view(), name='user_by_username'),
-    
-    
+
+    # focus session + settings sync
+    path('api/sessions/', SessionController.as_view(), name='sessions'),
+    path('api/settings/', SettingController.as_view(), name='settings'),
+
     re_path(r'^.*$', index),
 ]
 # Serve static files

@@ -1,22 +1,33 @@
-from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.views import View
 from django.db import IntegrityError
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required
 
 User = get_user_model()  # This ensures you use the custom User model
 
-@method_decorator(csrf_exempt, name='dispatch')
+
+def _params(request):
+    """Accept both form-encoded and JSON bodies."""
+    import json
+
+    if request.content_type == 'application/json':
+        try:
+            data = json.loads(request.body or '{}')
+            if isinstance(data, dict):
+                return {k: v for k, v in data.items() if isinstance(v, str)}
+        except json.JSONDecodeError:
+            pass
+        return {}
+    return request.POST
+
+
 class UserController(View):
     def post(self, request):
-        # Get inputs from the request
-        email = request.POST.get('email')
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        # print(email, username, password)
+        # Get inputs from the request (form-encoded or JSON)
+        params = _params(request)
+        email = params.get('email')
+        username = params.get('username')
+        password = params.get('password')
 
         if not email or not username or not password:
             return JsonResponse({'message': 'All fields are required'}, status=400)
@@ -31,46 +42,26 @@ class UserController(View):
             return JsonResponse({
                 'message': 'User created successfully',
                 'user': {
-                    'uid': user.uid,
+                    'uid': str(user.uid),
                     'username': user.username,
                     'email': user.email,
                 }
-            })
-        
-        except IntegrityError as e:
+            }, status=201)
+
+        except IntegrityError:
             # Return error message if username or email already exists
             return JsonResponse({'message': 'Username or email already exists'}, status=400)
-        
-        except Exception as e:
-            # Handle other exceptions
-            return JsonResponse({'message': str(e)}, status=400)
 
-    @method_decorator(login_required)  # Ensures only logged-in users can access
     def get(self, request):
-        user = request.user  # Get the logged-in user
-        
+        if not request.user.is_authenticated:
+            return JsonResponse({'message': 'Authentication required'}, status=401)
+
+        user = request.user
+
         return JsonResponse({
-            'uid': user.uid,
+            'uid': str(user.uid),
             'username': user.username,
             'email': user.email,
             'phone': user.phone if hasattr(user, 'phone') else None,
             'role': user.role.name if hasattr(user, 'role') and user.role else None,
         })
-        
-    # def get(self, request, username=None):
-    #     """Fetch user data by username."""
-    #     if username:
-    #         try:
-    #             user = User.objects.get(username=username)
-    #             return JsonResponse({
-    #                 'uid': user.uid,
-    #                 'username': user.username,
-    #                 'email': user.email,
-    #                 'phone': user.phone if hasattr(user, 'phone') else None,
-    #                 'role': user.role.name if hasattr(user, 'role') and user.role else None
-    #             })
-    #         except User.DoesNotExist:
-    #             return JsonResponse({'message': 'User not found'}, status=404)
-        
-    #     return JsonResponse({'message': 'Username parameter is required'}, status=400)
-        
