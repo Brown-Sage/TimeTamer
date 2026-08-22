@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.utils.dateparse import parse_datetime
 from django.views import View
 
-from core.models import FocusSession, Setting
+from core.models import FocusSession, Note, Setting, Task
 
 
 def _require_auth(request):
@@ -135,3 +135,168 @@ class SettingController(View):
 
     def post(self, request):
         return self.put(request)
+
+
+def _aware(value):
+    """Parse an ISO datetime string, returning None for junk input."""
+    if not value:
+        return None
+    parsed = parse_datetime(str(value))
+    if parsed is None:
+        return None
+    if django.utils.timezone.is_naive(parsed):
+        parsed = django.utils.timezone.make_aware(parsed)
+    return parsed
+
+
+class CollectionSyncController(View):
+    """
+    Whole-collection sync for client-owned item lists (tasks, notes).
+
+    The client owns ordering/ids; the server mirrors its current state.
+    GET    → list every stored item for the user
+    PUT    → bulk-upsert keyed by client_id, then delete rows whose
+             client_id is missing from the payload (tombstone-free sync)
+    """
+
+    model = None                # set by subclasses
+    payload_key = 'items'       # expected body key
+    max_items = 500
+
+    known_fields = ()           # fields promoted to columns; the rest land in `extra`
+
+    def serialize(self, obj):
+        return {
+            'client_id': obj.client_id,
+            'created_at': obj.created_at.isoformat(),
+            'updated_at': obj.updated_at.isoformat(),
+            'extra': obj.extra or {},
+        }
+
+    def get(self, request):
+        unauthorized = _require_auth(request)
+        if unauthorized:
+            return unauthorized
+
+        items = [self.serialize(o) for o in self.model.objects.filter(user=request.user)[:5000]]
+        return JsonResponse({self.payload_key: items})
+
+    def put(self, request):
+        unauthorized = _require_auth(request)
+        if unauthorized:
+            return unauthorized
+
+        payload = _parse_body(request)
+        if payload is None:
+            return JsonResponse({'message': 'Invalid JSON'}, status=400)
+
+        items = payload.get(self.payload_key)
+        # The key is required: only an explicit empty list may clear the
+        # collection, a malformed body must never wipe stored rows.
+        if not isinstance(items, list):
+            return JsonResponse(
+                {'message': f'Expected {{"{self.payload_key}": [...]}}, got no list'},
+                status=400,
+            )
+
+        if len(items) > self.max_items:
+            return JsonResponse({'message': 'Too many items in one request'}, status=400)
+
+        saved, skipped = 0, 0
+        seen_client_ids = set()
+        for item in items:
+            row = self.build_row(item)
+            if row is None:
+                skipped += 1
+                continue
+
+            client_id, fields, extra = row
+            seen_client_ids.add(client_id)
+
+            defaults = {'extra': extra or None}
+            defaults.update(fields)
+            self.model.objects.update_or_create(
+                user=request.user, client_id=client_id, defaults=defaults,
+            )
+            saved += 1
+
+        # Anything this user has on the server that the payload no longer
+        # mentions was deleted on some device: drop it here too.
+        stale = self.model.objects.filter(user=request.user, client_id__isnull=False)
+        if seen_client_ids:
+            stale = stale.exclude(client_id__in=seen_client_ids)
+        deleted = stale.delete()[0]
+
+        return JsonResponse({'saved': saved, 'skipped': skipped, 'deleted': deleted}, status=200)
+
+    def post(self, request):
+        return self.put(request)
+
+    def build_row(self, item):
+        """
+        Validate one incoming item.
+
+        Returns (client_id, column_fields dict, extra dict) or None when the
+        item should be skipped. Structurally broken payloads are caught
+        before this runs; junk *items* are skipped, mirroring sessions.
+        """
+        raise NotImplementedError
+
+
+class TaskController(CollectionSyncController):
+    model = Task
+    payload_key = 'tasks'
+    known_fields = ('text', 'title', 'completed', 'completed_at')
+
+    def serialize(self, obj):
+        data = super().serialize(obj)
+        data.update({
+            'title': obj.title,
+            'completed': obj.completed,
+            'completed_at': obj.completed_at.isoformat() if obj.completed_at else None,
+        })
+        return data
+
+    def build_row(self, item):
+        if not isinstance(item, dict):
+            return None
+
+        client_id = str(item.get('client_id') or '')[:64]
+        title = str(item.get('title') or item.get('text') or '').strip()[:255]
+        if not client_id or not title:
+            return None
+
+        completed_at = _aware(item.get('completed_at')) if item.get('completed') else None
+
+        extra = {k: v for k, v in item.items() if k not in self.known_fields and k != 'client_id'}
+
+        return client_id, {
+            'title': title,
+            'description': '',
+            'completed': bool(item.get('completed')),
+            'completed_at': completed_at,
+            'deleted_at': None,
+        }, extra
+
+
+class NoteController(CollectionSyncController):
+    model = Note
+    payload_key = 'notes'
+
+    def serialize(self, obj):
+        data = super().serialize(obj)
+        data['text'] = obj.text
+        return data
+
+    def build_row(self, item):
+        if not isinstance(item, dict):
+            return None
+
+        client_id = str(item.get('client_id') or '')[:64]
+        text = str(item.get('text') or '').strip()
+        if not client_id or not text:
+            return None
+
+        extra = {k: v for k, v in item.items() if k != 'text' and k != 'client_id'}
+
+        return client_id, {'text': text[:10000]}, extra

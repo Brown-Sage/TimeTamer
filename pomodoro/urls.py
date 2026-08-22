@@ -19,7 +19,12 @@ from django.urls import path,re_path
 from django.views.generic import TemplateView
 from core.controllers.AuthController import AuthController
 from core.controllers.UserController import UserController
-from core.controllers.SyncController import SessionController, SettingController
+from core.controllers.SyncController import (
+    NoteController,
+    SessionController,
+    SettingController,
+    TaskController,
+)
 from django.conf import settings
 from django.conf.urls.static import static
 from core.views import csrf, index
@@ -39,6 +44,10 @@ urlpatterns = [
     # focus session + settings sync
     path('api/sessions/', SessionController.as_view(), name='sessions'),
     path('api/settings/', SettingController.as_view(), name='settings'),
+
+    # tasks + notes sync (whole-collection upsert)
+    path('api/tasks/', TaskController.as_view(), name='tasks'),
+    path('api/notes/', NoteController.as_view(), name='notes'),
 
     re_path(r'^.*$', index),
 ]

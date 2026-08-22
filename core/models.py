@@ -48,12 +48,43 @@ class Setting(models.Model):
 
 # Tasks Model
 class Task(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tasks")
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
+    completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(blank=True, null=True)
+    client_id = models.CharField(max_length=64, blank=True, null=True)  # dedup/sync key sent by the client
+    extra = models.JSONField(blank=True, null=True)  # client-side fields (priority, duration, timers, ...)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user", "client_id"], name="uniq_user_client_task")
+        ]
+
+    def __str__(self):
+        return self.title
+
+
+# Quick Note Model
+class Note(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notes")
+    text = models.TextField()
+    client_id = models.CharField(max_length=64, blank=True, null=True)  # dedup/sync key sent by the client
+    extra = models.JSONField(blank=True, null=True)  # client-side fields (display timestamp, ...)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "client_id"], name="uniq_user_client_note")
+        ]
+
+    def __str__(self):
+        return f"{self.text[:30]}"
 
 # Focus Session Model
 class FocusSession(models.Model):

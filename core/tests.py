@@ -1,5 +1,7 @@
 from django.test import Client, TestCase
 
+import json as _json
+
 
 class AuthFlowTests(TestCase):
     def setUp(self):
@@ -193,3 +195,122 @@ class AuthenticatedApiTests(TestCase):
     def test_settings_require_auth(self):
         anon = Client()
         self.assertEqual(anon.get('/api/settings/').status_code, 401)
+
+    # ---- tasks ----
+
+    def task(self, id_, **overrides):
+        base = {
+            'client_id': str(id_),
+            'text': f'Task {id_}',
+            'completed': False,
+            'completed_at': None,
+            'priority': 'high',
+            'duration': 25,
+            'createdAt': '2026-08-22T09:00:00.000Z',
+        }
+        base.update(overrides)
+        if base['completed'] and not base['completed_at']:
+            base['completed_at'] = '2026-08-22T09:30:00.000Z'
+        return base
+
+    def test_tasks_require_auth(self):
+        anon = Client()
+        self.assertEqual(anon.get('/api/tasks/').status_code, 401)
+        self.assertEqual(
+            anon.put('/api/tasks/', data='{"tasks": []}', content_type='application/json').status_code,
+            401,
+        )
+
+    def test_tasks_roundtrip_preserves_extra_fields(self):
+        resp = self.json_put('/api/tasks/', {'tasks': [self.task(1, completed=True)]})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), {'saved': 1, 'skipped': 0, 'deleted': 0})
+
+        tasks = self.client.get('/api/tasks/').json()['tasks']
+        self.assertEqual(len(tasks), 1)
+        row = tasks[0]
+        self.assertEqual(row['title'], 'Task 1')
+        self.assertTrue(row['completed'])
+        self.assertIsNotNone(row['completed_at'])
+        # client-side fields ride along in `extra`
+        self.assertEqual(row['extra']['priority'], 'high')
+        self.assertEqual(row['extra']['duration'], 25)
+
+    def test_tasks_upsert_updates_existing_row(self):
+        self.json_put('/api/tasks/', {'tasks': [self.task(1)]})
+        self.json_put('/api/tasks/', {'tasks': [self.task(1, completed=True)]})
+
+        tasks = self.client.get('/api/tasks/').json()['tasks']
+        self.assertEqual(len(tasks), 1)
+        self.assertTrue(tasks[0]['completed'])
+
+    def test_tasks_delete_missing_rows(self):
+        self.json_put('/api/tasks/', {'tasks': [self.task(1), self.task(2)]})
+        # device B deleted task 2 and pushed the remaining state
+        resp = self.json_put('/api/tasks/', {'tasks': [self.task(1)]})
+        self.assertEqual(resp.json()['deleted'], 1)
+
+        tasks = self.client.get('/api/tasks/').json()['tasks']
+        self.assertEqual([t['client_id'] for t in tasks], ['1'])
+
+    def test_tasks_empty_payload_clears_collection(self):
+        self.json_put('/api/tasks/', {'tasks': [self.task(1)]})
+        resp = self.json_put('/api/tasks/', {'tasks': []})
+        self.assertEqual(resp.json()['deleted'], 1)
+        self.assertEqual(len(self.client.get('/api/tasks/').json()['tasks']), 0)
+
+    def test_tasks_junk_items_skipped_broken_payload_rejected(self):
+        resp = self.json_put('/api/tasks/', {'tasks': [
+            {'client_id': '', 'text': 'no id'},
+            'not-a-dict',
+            {'client_id': '9', 'text': ''},
+        ]})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), {'saved': 0, 'skipped': 3, 'deleted': 0})
+
+        for bad in ({}, {'tasks': 'nope'}, None):
+            body = _json.dumps(bad) if bad is not None else '{broken'
+            resp = self.client.put(
+                '/api/tasks/', data=body, content_type='application/json'
+            )
+            self.assertEqual(resp.status_code, 400, bad)
+
+    def test_tasks_are_per_user(self):
+        other = Client()
+        other.post('/api/register/', {
+            'email': 'other@example.com', 'username': 'other', 'password': 'sup3r-secret-pass',
+        })
+        other.post('/api/login/', {'username': 'other', 'password': 'sup3r-secret-pass'})
+
+        self.json_put('/api/tasks/', {'tasks': [self.task(1)]})
+        resp = other.get('/api/tasks/')
+        self.assertEqual(resp.json()['tasks'], [])
+
+    # ---- notes ----
+
+    def note(self, id_, **overrides):
+        return {'client_id': str(id_), 'text': f'Note {id_}', 'timestamp': '8/22/26, 9:00 AM', **overrides}
+
+    def test_notes_require_auth(self):
+        anon = Client()
+        self.assertEqual(anon.get('/api/notes/').status_code, 401)
+        self.assertEqual(
+            anon.put('/api/notes/', data='{"notes": []}', content_type='application/json').status_code,
+            401,
+        )
+
+    def test_notes_roundtrip_and_delete_missing(self):
+        resp = self.json_put('/api/notes/', {'notes': [self.note(1), self.note(2)]})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), {'saved': 2, 'skipped': 0, 'deleted': 0})
+
+        notes = self.client.get('/api/notes/').json()['notes']
+        self.assertEqual(len(notes), 2)
+        self.assertEqual(notes[0]['text'], 'Note 1')
+        self.assertEqual(notes[0]['extra']['timestamp'], '8/22/26, 9:00 AM')
+
+        resp = self.json_put('/api/notes/', {'notes': [self.note(2, text='Note 2 edited')]})
+        self.assertEqual(resp.json(), {'saved': 1, 'skipped': 0, 'deleted': 1})
+
+        notes = self.client.get('/api/notes/').json()['notes']
+        self.assertEqual([n['text'] for n in notes], ['Note 2 edited'])
