@@ -1,29 +1,21 @@
-/* ---------- Live clock chip ---------- */
+/* ---------- Live clock chip (topbar) ---------- */
 .time-progress-container {
-    position: absolute;
-    top: -6px;
-    right: 30px;
-    padding: 13px 20px 15px;
-    width: auto;
-    min-width: 215px;
+    padding: 6px 16px;
     box-sizing: border-box;
     color: var(--ink);
     display: flex;
     flex-direction: column;
     align-items: stretch;
     background: var(--surface);
-    backdrop-filter: blur(22px) saturate(1.2);
-    -webkit-backdrop-filter: blur(22px) saturate(1.2);
     border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-card);
+    border-radius: var(--radius-md);
 }
 
 .time-info {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 7px;
 }
 
 .time-display {
@@ -34,43 +26,41 @@
 
 .current-time {
     font-family: var(--font-display);
-    font-size: 2.05rem;
+    font-size: 1.5rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
-    color: #fbf3e8;
-    line-height: 1;
-    text-shadow: 0 2px 20px rgba(226, 154, 99, 0.2);
+    color: var(--ink);
+    line-height: 1.1;
 }
 
 .current-period {
-    font-size: 0.82rem;
-    font-weight: 800;
+    font-size: 0.72rem;
+    font-weight: 700;
     color: var(--accent);
     letter-spacing: 0.06em;
 }
 
 .current-date {
-    font-size: 0.74rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    color: var(--ink-soft);
-    margin-top: 5px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--ink-faint);
+    margin-top: 3px;
 }
 
 /* ---------- Day progress ---------- */
 .progress-bar-container {
     width: 100%;
-    height: 6px;
-    background-color: rgba(255, 238, 216, 0.08);
+    height: 4px;
+    background-color: var(--surface-dim);
     border-radius: 999px;
     overflow: hidden;
 }
 
 .progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, #96b28a, #e29a63);
+    background: linear-gradient(90deg, var(--sage), var(--accent));
     transition: width 1s linear;
     border-radius: 999px;
-    box-shadow: 0 0 12px rgba(226, 154, 99, 0.35);
 }

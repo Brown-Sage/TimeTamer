@@ -1,53 +1,53 @@
 /* ============================================================
-   TimeTamer — dark glass design system
-   Warm midnight tones, frosted translucent surfaces that float
-   over any wallpaper (custom Theme backgrounds still work).
+   TimeTamer — "Quiet Paper" design system
+   Warm paper surfaces, ink typography, one terracotta accent,
+   hairline borders and soft diffuse shadows. No blur, no glow.
+   Custom wallpapers (Theme picker) still override the canvas.
    ============================================================ */
 
 :root {
-    /* Default wallpaper: warm midnight with ember + moss glows */
+    /* Canvas: flat warm paper with the faintest corner tints */
     --app-background:
-        radial-gradient(1100px 700px at 85% -10%, rgba(224, 154, 99, 0.13), transparent 62%),
-        radial-gradient(900px 650px at -10% 108%, rgba(150, 178, 138, 0.09), transparent 60%),
-        linear-gradient(158deg, #191411 0%, #221b15 52%, #151110 100%);
+        radial-gradient(900px 600px at 88% -12%, rgba(194, 94, 58, 0.05), transparent 60%),
+        radial-gradient(800px 560px at -8% 106%, rgba(124, 144, 112, 0.06), transparent 58%),
+        #f4efe4;
 
-    /* Glass surfaces */
-    --surface: rgba(33, 27, 22, 0.55);
-    --surface-strong: rgba(40, 33, 27, 0.82);
-    --surface-dim: rgba(255, 238, 216, 0.055);
+    /* Surfaces */
+    --surface: #fdfaf3;
+    --surface-strong: #ffffff;
+    --surface-dim: rgba(38, 32, 25, 0.04);
 
     /* Ink */
-    --ink: #f3eadd;
-    --ink-soft: #bcac97;
-    --ink-faint: #867661;
+    --ink: #27211a;
+    --ink-soft: #6e6455;
+    --ink-faint: #a49a8a;
 
     /* Lines & accents */
-    --line: rgba(255, 230, 200, 0.11);
-    --line-soft: rgba(255, 230, 200, 0.07);
-    --accent: #e29a63;
-    --accent-deep: #c97e46;
-    --accent-soft: rgba(226, 154, 99, 0.14);
-    --sage: #a9c09c;
-    --sage-deep: #bccfb0;
-    --sage-soft: rgba(150, 178, 138, 0.16);
-    --danger: #e0896f;
-    --danger-soft: rgba(224, 137, 111, 0.14);
+    --line: #e3dac6;
+    --line-soft: #ebe3d2;
+    --accent: #c25e3a;
+    --accent-deep: #a84c2c;
+    --accent-soft: rgba(194, 94, 58, 0.09);
+    --sage: #75916a;
+    --sage-deep: #5c7652;
+    --sage-soft: rgba(117, 145, 106, 0.12);
+    --danger: #ad4433;
+    --danger-soft: rgba(173, 68, 51, 0.08);
 
     /* Shape & depth */
-    --radius-lg: 26px;
-    --radius-md: 16px;
-    --radius-sm: 10px;
+    --radius-lg: 22px;
+    --radius-md: 14px;
+    --radius-sm: 9px;
     --shadow-card:
-        0 28px 56px -24px rgba(0, 0, 0, 0.65),
-        0 2px 8px rgba(0, 0, 0, 0.25),
-        inset 0 1px 0 rgba(255, 232, 204, 0.06);
+        0 1px 2px rgba(62, 50, 34, 0.05),
+        0 14px 36px -20px rgba(62, 50, 34, 0.28);
     --shadow-pop:
-        0 40px 80px -30px rgba(0, 0, 0, 0.75),
-        inset 0 1px 0 rgba(255, 232, 204, 0.08);
+        0 2px 4px rgba(62, 50, 34, 0.06),
+        0 24px 56px -24px rgba(62, 50, 34, 0.35);
 
     /* Type */
     --font-display: 'Fraunces', Georgia, serif;
-    --font-body: 'Nunito Sans', 'Segoe UI', sans-serif;
+    --font-body: 'Inter', 'Segoe UI', sans-serif;
 }
 
 html,
@@ -76,6 +76,8 @@ body {
     min-height: 100vh;
     height: 100%;
     font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.55;
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
 }
@@ -85,11 +87,9 @@ body {
     height: 100%;
 }
 
-/* Shared glass card — used across widgets */
+/* Shared card — used across widgets */
 .glass-card {
     background: var(--surface);
-    backdrop-filter: blur(22px) saturate(1.2);
-    -webkit-backdrop-filter: blur(22px) saturate(1.2);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-card);
@@ -100,6 +100,7 @@ h2,
 h3 {
     font-family: var(--font-display);
     color: var(--ink);
+    letter-spacing: -0.01em;
 }
 
 button,
@@ -111,8 +112,8 @@ textarea {
 }
 
 ::selection {
-    background: rgba(226, 154, 99, 0.35);
-    color: #fff6ea;
+    background: rgba(194, 94, 58, 0.22);
+    color: var(--ink);
 }
 
 /* Scrollbar */
@@ -125,12 +126,12 @@ textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(243, 234, 221, 0.16);
+    background: #d8cdb6;
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(243, 234, 221, 0.26);
+    background: #c7ba9e;
 }
 
 /* Keep the wallpaper visible through app containers */

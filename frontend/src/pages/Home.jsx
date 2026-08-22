@@ -5,7 +5,6 @@ import Menu from '../components/Menu'
 import SpotifyFrame from '../components/SpotifyFrame'
 import { toast } from 'react-toastify'
 import TimeProgress from '../components/TimeProgress'
-import SmallAnimations from '../components/SmallAnimations'
 import Goal from '../components/Goal'
 import QuickNote from '../components/QuickNote'
 import { useAuth } from '../context/AuthContext'
@@ -22,10 +21,6 @@ function Home() {
 
     return (
         <div className="container home">
-            {/* ambient glows */}
-            <div className="glow glow-ember" aria-hidden="true" />
-            <div className="glow glow-moss" aria-hidden="true" />
-
             <header className="topbar">
                 <button
                     type="button"
@@ -36,6 +31,7 @@ function Home() {
                 </button>
 
                 <div className="topbar-right">
+                    <TimeProgress />
                     {!loading && user ? (
                         <>
                             <span className="greeting-chip">
@@ -71,7 +67,6 @@ function Home() {
             </header>
 
             <main className="stage">
-                <TimeProgress />
                 <div className="Maintimer">
                     <Timer />
                 </div>
@@ -84,7 +79,6 @@ function Home() {
             <Goal />
             <QuickNote />
             <Menu />
-            <SmallAnimations />
         </div>
     )
 }
