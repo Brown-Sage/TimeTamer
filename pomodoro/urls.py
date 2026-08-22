@@ -29,6 +29,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from core.views import csrf, index
 
+from core.controllers.SpotifyController import (
+    SpotifyCallbackView,
+    SpotifyDisconnectView,
+    SpotifyLoginView,
+    SpotifyStatusView,
+)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/csrf/', csrf, name='csrf'),
@@ -48,6 +55,12 @@ urlpatterns = [
     # tasks + notes sync (whole-collection upsert)
     path('api/tasks/', TaskController.as_view(), name='tasks'),
     path('api/notes/', NoteController.as_view(), name='notes'),
+
+    # spotify oauth scaffold
+    path('api/spotify/login/', SpotifyLoginView.as_view(), name='spotify_login'),
+    path('api/spotify/callback/', SpotifyCallbackView.as_view(), name='spotify_callback'),
+    path('api/spotify/status/', SpotifyStatusView.as_view(), name='spotify_status'),
+    path('api/spotify/disconnect/', SpotifyDisconnectView.as_view(), name='spotify_disconnect'),
 
     re_path(r'^.*$', index),
 ]

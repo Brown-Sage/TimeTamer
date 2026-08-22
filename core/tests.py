@@ -1,4 +1,4 @@
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 
 import json as _json
 
@@ -87,8 +87,8 @@ class AuthFlowTests(TestCase):
         self.assertEqual(resp.status_code, 200)
 
 
-class AuthenticatedApiTests(TestCase):
-    """Base: a registered + logged-in client."""
+class LoggedInMixin:
+    """Shared fixture: a registered + logged-in client."""
 
     def setUp(self):
         self.client = Client()
@@ -105,16 +105,18 @@ class AuthenticatedApiTests(TestCase):
         self.assertEqual(resp.status_code, 200)
 
     def json_post(self, path, payload):
-        import json as _json
         return self.client.post(
             path, data=_json.dumps(payload), content_type='application/json'
         )
 
     def json_put(self, path, payload):
-        import json as _json
         return self.client.put(
             path, data=_json.dumps(payload), content_type='application/json'
         )
+
+
+class AuthenticatedApiTests(LoggedInMixin, TestCase):
+    """Sessions/settings/tasks/notes endpoint behavior."""
 
     # ---- sessions ----
 
@@ -314,3 +316,52 @@ class AuthenticatedApiTests(TestCase):
 
         notes = self.client.get('/api/notes/').json()['notes']
         self.assertEqual([n['text'] for n in notes], ['Note 2 edited'])
+
+
+class SpotifyOAuthTests(LoggedInMixin, TestCase):
+    """Offline checks for the OAuth scaffold (no real Spotify calls)."""
+
+    def test_login_requires_auth(self):
+        self.assertEqual(Client().get('/api/spotify/login/').status_code, 401)
+
+    def test_status_requires_auth(self):
+        self.assertEqual(Client().get('/api/spotify/status/').status_code, 401)
+
+    @override_settings(SPOTIFY_CLIENT_ID=None, SPOTIFY_CLIENT_SECRET=None)
+    def test_login_unconfigured_returns_503(self):
+        resp = self.client.get('/api/spotify/login/')
+        self.assertEqual(resp.status_code, 503)
+
+    @override_settings(SPOTIFY_CLIENT_ID='cid', SPOTIFY_CLIENT_SECRET='secret')
+    def test_login_redirects_to_spotify_with_state(self):
+        resp = self.client.get('/api/spotify/login/')
+        self.assertEqual(resp.status_code, 302)
+        location = resp['Location']
+        self.assertTrue(location.startswith('https://accounts.spotify.com/authorize?'))
+        self.assertIn('client_id=cid', location)
+        self.assertIn('user-read-playback-state', location)
+        # a state token was stashed for callback verification
+        self.assertTrue(self.client.session.get('spotify_oauth_state'))
+
+    @override_settings(SPOTIFY_CLIENT_ID='cid', SPOTIFY_CLIENT_SECRET='secret')
+    def test_callback_rejects_state_mismatch(self):
+        resp = self.client.get('/api/spotify/callback/', {'code': 'abc', 'state': 'evil'})
+        self.assertEqual(resp.status_code, 400)
+
+    @override_settings(SPOTIFY_CLIENT_ID='cid', SPOTIFY_CLIENT_SECRET='secret')
+    def test_callback_without_prior_login_rejected(self):
+        resp = self.client.get('/api/spotify/callback/', {'code': 'abc', 'state': 'x'})
+        self.assertEqual(resp.status_code, 400)
+
+    def test_status_disconnected_by_default(self):
+        resp = self.client.get('/api/spotify/status/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), {'connected': False})
+
+    def test_disconnect_is_idempotent(self):
+        resp = self.client.delete('/api/spotify/disconnect/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()['connected'], False)
+
+    def test_disconnect_requires_auth(self):
+        self.assertEqual(Client().delete('/api/spotify/disconnect/').status_code, 401)

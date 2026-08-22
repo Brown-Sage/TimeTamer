@@ -50,6 +50,12 @@ CSRF_TRUSTED_ORIGINS = [
 
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
+# Spotify OAuth (see core/controllers/SpotifyController.py).
+# Missing credentials disable the feature gracefully (503 from the endpoints).
+SPOTIFY_CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID')
+SPOTIFY_CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET')
+SPOTIFY_REDIRECT_URI = os.getenv('SPOTIFY_REDIRECT_URI')  # optional override
+
 
 # Application definition
 
