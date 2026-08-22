@@ -1,7 +1,8 @@
-import { createContext, useCallback, useContext, useState, useEffect, useRef } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import alarmSound from '../assets/mixkit-clear-announce-tones-2861.wav';
 import { pushFocusSession } from '../lib/sync';
+import { TimerContext } from './TimerContext';
 
 const DEFAULT_TIMER_SETTINGS = {
     focus: { minutes: 50, seconds: 0 },
@@ -21,8 +22,6 @@ const playAlarm = () => {
     const audio = new Audio(alarmSound);
     audio.play().catch(console.error);
 };
-
-const TimerContext = createContext();
 
 export function TimerProvider({ children }) {
     const [timerSettings, setTimerSettings] = useState(() => {
@@ -268,11 +267,3 @@ export function TimerProvider({ children }) {
 TimerProvider.propTypes = {
     children: PropTypes.node.isRequired
 };
-
-export function useTimer() {
-    const context = useContext(TimerContext);
-    if (!context) {
-        throw new Error('useTimer must be used within a TimerProvider');
-    }
-    return context;
-}

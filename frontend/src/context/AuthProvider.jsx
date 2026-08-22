@@ -1,6 +1,4 @@
 import {
-    createContext,
-    useContext,
     useEffect,
     useState
 } from 'react'
@@ -10,8 +8,7 @@ import {
     applyRemoteSettings,
     startSettingsBackup
 } from '../lib/sync'
-
-const AuthContext = createContext()
+import { AuthContext } from './AuthContext'
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
@@ -75,10 +72,3 @@ AuthProvider.propTypes = {
     children: PropTypes.node.isRequired
 }
 
-export function useAuth() {
-    const context = useContext(AuthContext)
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider')
-    }
-    return context
-}

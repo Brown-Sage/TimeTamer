@@ -12,7 +12,7 @@ import rocketAnimation from "../assets/animations/rocket.json";
 import starAnimation from "../assets/animations/star.json";
 import runnerAnimation from "../assets/animations/runner.json";
 import plantAnimation from "../assets/animations/plant.json";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { pullFocusSessions } from "../lib/sync";
 
 const Container = styled("div")({
@@ -245,17 +245,17 @@ function Stats() {
   }, [lastStreakUpdate, completedFocusSessions]);
 
   // Function to calculate total focus time for today
-  const calculateTodaysFocusTime = () => {
+  const calculateTodaysFocusTime = useCallback(() => {
     const savedSessions = JSON.parse(localStorage.getItem('focusSessions') || '[]');
     const today = new Date().toLocaleDateString();
-    const todaysSessions = savedSessions.filter(session => 
+    const todaysSessions = savedSessions.filter(session =>
       new Date(session.timestamp).toLocaleDateString() === today
     );
     return todaysSessions.reduce((total, session) => total + session.minutes, 0);
-  };
+  }, []);
 
   // Function to update focus time data
-  const updateFocusTimeData = () => {
+  const updateFocusTimeData = useCallback(() => {
     const today = new Date();
     const formattedDate = today.toLocaleDateString('en-US', { 
       month: 'short', 
@@ -284,20 +284,14 @@ function Stats() {
       localStorage.setItem('focusTimeData', JSON.stringify(newData));
       return newData;
     });
-  };
-
-  // Debug log for focus time data
-  useEffect(() => {
-    console.log('Current focus time data:', focusTimeData);
-  }, [focusTimeData]);
+  }, [calculateTodaysFocusTime]);
 
   // Listen for focus session completion
   useEffect(() => {
-    const handleFocusSessionCompleted = (event) => {
-      console.log('Focus session completed event received with data:', event.detail);
+    const handleFocusSessionCompleted = () => {
       setCompletedFocusSessions(true);
       const today = new Date().toLocaleDateString();
-      
+
       // Only update streak if it's a new day
       if (lastStreakUpdate !== today) {
         setCurrentStreak(prev => {
@@ -308,7 +302,7 @@ function Stats() {
           return newStreak;
         });
       }
-      
+
       // Update focus time data with the new session
       updateFocusTimeData();
     };
@@ -317,9 +311,12 @@ function Stats() {
     return () => {
       window.removeEventListener('focusSessionCompleted', handleFocusSessionCompleted);
     };
-  }, [lastStreakUpdate]);
+  }, [lastStreakUpdate, updateFocusTimeData]);
 
   // Initialize focus time data with any existing sessions
+  const focusTimeDataRef = useRef(focusTimeData);
+  focusTimeDataRef.current = focusTimeData;
+
   useEffect(() => {
     // Merge focus history saved on other devices first (no-op when offline)
     pullFocusSessions()
@@ -330,16 +327,16 @@ function Stats() {
           month: 'short',
           day: 'numeric'
         });
-    
+
     // Generate last 7 days of data
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - (6 - i));
-      const dateStr = date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
+      const dateStr = date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
       });
-      
+
       // If it's today, calculate total focus time
       if (dateStr === formattedDate) {
         return {
@@ -347,9 +344,9 @@ function Stats() {
           time: calculateTodaysFocusTime()
         };
       }
-      
+
       // For past days, use existing data or 0
-      const existingData = focusTimeData.find(item => item.date === dateStr);
+      const existingData = focusTimeDataRef.current.find(item => item.date === dateStr);
       return {
         date: dateStr,
         time: existingData ? existingData.time : 0
@@ -359,7 +356,7 @@ function Stats() {
         setFocusTimeData(last7Days);
         localStorage.setItem('focusTimeData', JSON.stringify(last7Days));
       });
-  }, []);
+  }, [calculateTodaysFocusTime]);
 
   // Display Last streak update
   const lastUpdate = lastStreakUpdate ? new Date(lastStreakUpdate).toLocaleDateString(): new Date().toLocaleDateString()

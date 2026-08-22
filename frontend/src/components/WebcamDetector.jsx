@@ -1,95 +1,96 @@
 import { useEffect, useRef, useState } from 'react';
-import * as faceapi from 'face-api.js';
 import PropTypes from 'prop-types';
+
+const WEIGHTS_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+const DETECTION_INTERVAL = 300;  // Run every 300ms for faster response
+const ABSENCE_THRESHOLD = 3;     // 3 counts (900ms) threshold for faster pause
 
 const WebcamDetector = ({ onUserPresenceChange, isEnabled = false }) => {
     const videoRef = useRef(null);
+    const faceapiRef = useRef(null);
     const [isModelLoaded, setIsModelLoaded] = useState(false);
+    const [isModelLoading, setIsModelLoading] = useState(false);
     const [isWebcamEnabled, setIsWebcamEnabled] = useState(isEnabled);
     const [error, setError] = useState(null);
     const detectionIntervalRef = useRef(null);
     const noFaceCountRef = useRef(0);
-    const [debugInfo, setDebugInfo] = useState({ faceDetected: false, detections: [] });
 
     // Update webcam state when isEnabled prop changes
     useEffect(() => {
         setIsWebcamEnabled(isEnabled);
     }, [isEnabled]);
 
-    // Load face detection model
+    // Load face-api.js and the model weights only when the webcam is first
+    // enabled. The library is ~1.5MB, so it must stay out of the main bundle.
     useEffect(() => {
-        const loadModel = async () => {
+        if (!isWebcamEnabled || isModelLoaded || isModelLoading) return undefined;
+
+        let cancelled = false;
+        setIsModelLoading(true);
+        (async () => {
             try {
-                console.log('Loading face detection model...');
-                await faceapi.nets.tinyFaceDetector.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights');
-                console.log('Face detection model loaded successfully');
+                const faceapi = await import('face-api.js');
+                await faceapi.nets.tinyFaceDetector.loadFromUri(WEIGHTS_URL);
+                if (cancelled) return;
+                faceapiRef.current = faceapi;
                 setIsModelLoaded(true);
             } catch (err) {
                 console.error('Failed to load face detection model:', err);
-                setError('Failed to load face detection model. Please check your internet connection and try again.');
+                if (!cancelled) {
+                    setError('Failed to load face detection model. Please check your internet connection and try again.');
+                    setIsWebcamEnabled(false);
+                }
+            } finally {
+                if (!cancelled) setIsModelLoading(false);
             }
-        };
+        })();
 
-        loadModel();
-    }, []);
+        return () => { cancelled = true; };
+    }, [isWebcamEnabled, isModelLoaded, isModelLoading]);
 
     // Handle face detection
     useEffect(() => {
-        if (!isModelLoaded || !isWebcamEnabled) return;
+        if (!isModelLoaded || !isWebcamEnabled) return undefined;
 
-        const DETECTION_INTERVAL = 300;  // Run every 300ms for faster response
-        const ABSENCE_THRESHOLD = 3;     // 3 counts (900ms) threshold for faster pause
-
-        // Use a ref to persist the last reported presence status
         const lastReportedPresenceRef = { current: true };
 
         const detectFace = async () => {
             try {
-                if (!videoRef.current) return;
-                
+                const video = videoRef.current;
+                const faceapi = faceapiRef.current;
+                if (!video || !faceapi) return;
+
                 const detections = await faceapi.detectAllFaces(
-                    videoRef.current,
+                    video,
                     new faceapi.TinyFaceDetectorOptions({
                         inputSize: 320,
                         scoreThreshold: 0.15,   // Even lower threshold for better sensitivity
                     })
                 );
-                
+
                 const faceFound = detections.length > 0;
-                setDebugInfo({ 
-                    faceDetected: faceFound, 
-                    detections: detections.map(d => ({
-                        score: d.score,
-                        box: `${Math.round(d.box.x)},${Math.round(d.box.y)} - ${Math.round(d.box.width)}x${Math.round(d.box.height)}`
-                    }))
-                });
-                
-                console.log(`Face detection: ${faceFound ? 'Face found' : 'No face'}`);
+
                 if (faceFound) {
                     // Reset our no-face counter.
                     noFaceCountRef.current = 0;
-                    
+
                     // ALWAYS report presence when face is found, regardless of previous state
                     // This ensures the timer component knows immediately when to resume
-                    console.log('Face detected - ALWAYS reporting user presence as true');
                     onUserPresenceChange(true);
-                    
+
                     // Also force a second call after a short delay to ensure it's processed
                     if (!lastReportedPresenceRef.current) {
                         setTimeout(() => {
-                            console.log('Sending backup presence true signal');
                             onUserPresenceChange(true);
                         }, 200);
                     }
-                    
+
                     // Update last reported state
                     lastReportedPresenceRef.current = true;
                 } else {
-                    noFaceCountRef.current++;
-                    console.log('No face count:', noFaceCountRef.current);
+                    noFaceCountRef.current += 1;
                     // Only report a change (to false) once when we exceed the threshold.
                     if (noFaceCountRef.current >= ABSENCE_THRESHOLD && lastReportedPresenceRef.current === true) {
-                        console.log('No face detected for threshold - setting user presence to false');
                         lastReportedPresenceRef.current = false;
                         onUserPresenceChange(false);
                     }
@@ -100,32 +101,34 @@ const WebcamDetector = ({ onUserPresenceChange, isEnabled = false }) => {
         };
 
         // Wait for the video to load before starting detection.
-        if (videoRef.current) {
-            videoRef.current.addEventListener('loadeddata', () => {
-                console.log('Video loaded – starting detection loop');
+        const video = videoRef.current;
+        if (video) {
+            const handleLoadedData = () => {
                 // Initialize counters and assume face is present.
                 noFaceCountRef.current = 0;
                 lastReportedPresenceRef.current = true;
                 onUserPresenceChange(true);
                 detectionIntervalRef.current = setInterval(detectFace, DETECTION_INTERVAL);
-            }, { once: true });
+            };
+            video.addEventListener('loadeddata', handleLoadedData, { once: true });
+
+            return () => {
+                video.removeEventListener('loadeddata', handleLoadedData);
+                clearInterval(detectionIntervalRef.current);
+            };
         }
 
-        return () => {
-            if (detectionIntervalRef.current) {
-                clearInterval(detectionIntervalRef.current);
-            }
-        };
+        return () => clearInterval(detectionIntervalRef.current);
     }, [isModelLoaded, isWebcamEnabled, onUserPresenceChange]);
 
     // Handle webcam setup
     useEffect(() => {
-        if (!isWebcamEnabled) return;
+        if (!isWebcamEnabled) return undefined;
+        let stream = null;
 
         const setupWebcam = async () => {
             try {
-                console.log('Setting up webcam...');
-                const stream = await navigator.mediaDevices.getUserMedia({
+                stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         width: { ideal: 640, min: 320 },
                         height: { ideal: 480, min: 240 },
@@ -138,12 +141,10 @@ const WebcamDetector = ({ onUserPresenceChange, isEnabled = false }) => {
                     videoRef.current.srcObject = stream;
                     // Wait for video to be fully ready before starting detection
                     videoRef.current.onloadedmetadata = () => {
-                        console.log('Video metadata loaded');
                         videoRef.current.play().catch(err => {
                             console.error('Error playing video:', err);
                         });
                     };
-                    console.log('Webcam setup complete');
                 }
             } catch (err) {
                 console.error('Webcam setup error:', err);
@@ -155,8 +156,8 @@ const WebcamDetector = ({ onUserPresenceChange, isEnabled = false }) => {
         setupWebcam();
 
         return () => {
-            if (videoRef.current?.srcObject) {
-                videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
             }
         };
     }, [isWebcamEnabled]);
@@ -172,45 +173,20 @@ const WebcamDetector = ({ onUserPresenceChange, isEnabled = false }) => {
 
     return (
         <div className="webcam-detector">
-            <button 
+            <button
                 onClick={toggleWebcam}
                 className={`webcam-toggle ${isWebcamEnabled ? 'active' : ''}`}
             >
                 {isWebcamEnabled ? 'Disable Webcam' : 'Enable Webcam'}
             </button>
             {error && <div className="webcam-error">{error}</div>}
-            
-            {/* Debug info display */}
-            {isWebcamEnabled && (
-                <div className="webcam-debug" style={{ 
-                    display: 'none',
-                    fontSize: '11px', 
-                    opacity: 0.8, 
-                    backgroundColor: 'rgba(0,0,0,0.1)',
-                    padding: '4px',
-                    maxWidth: '300px',
-                    borderRadius: '4px',
-                    marginTop: '4px'
-                }}>
-                    Face detected: {debugInfo.faceDetected ? 'Yes' : 'No'}
-                    {debugInfo.detections.length > 0 && (
-                        <div>
-                            {debugInfo.detections.map((d, i) => (
-                                <div key={i}>
-                                    Score: {d.score.toFixed(2)}, Box: {d.box}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
-            
+
             <video
                 ref={videoRef}
                 autoPlay
                 playsInline
                 muted
-                style={{ 
+                style={{
                     display: 'none',  // Hide the video element
                     width: '160px',
                     height: '120px'

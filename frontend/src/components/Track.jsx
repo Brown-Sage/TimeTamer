@@ -7,7 +7,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { pullFocusSessions } from "../lib/sync";
 
@@ -102,17 +102,17 @@ export default function Track() {
   });
 
   // Function to calculate total focus time for today
-  const calculateTodaysFocusTime = () => {
+  const calculateTodaysFocusTime = useCallback(() => {
     const savedSessions = JSON.parse(localStorage.getItem('focusSessions') || '[]');
     const today = new Date().toLocaleDateString();
-    const todaysSessions = savedSessions.filter(session => 
+    const todaysSessions = savedSessions.filter(session =>
       new Date(session.timestamp).toLocaleDateString() === today
     );
     return todaysSessions.reduce((total, session) => total + session.minutes, 0);
-  };
+  }, []);
 
   // Function to calculate stats
-  const calculateStats = () => {
+  const calculateStats = useCallback(() => {
     const todayMinutes = calculateTodaysFocusTime();
     const totalMinutes = focusTimeData.reduce((sum, day) => sum + day.time, 0);
     const dailyAverage = Math.round(totalMinutes / focusTimeData.length);
@@ -124,10 +124,10 @@ export default function Track() {
       dailyAverage,
       bestDay
     });
-  };
+  }, [calculateTodaysFocusTime, focusTimeData]);
 
   // Function to update focus time data
-  const updateFocusTimeData = () => {
+  const updateFocusTimeData = useCallback(() => {
     const today = new Date();
     const formattedDate = today.toLocaleDateString('en-US', { 
       month: 'short', 
@@ -156,12 +156,11 @@ export default function Track() {
       localStorage.setItem('focusTimeData', JSON.stringify(newData));
       return newData;
     });
-  };
+  }, [calculateTodaysFocusTime]);
 
   // Listen for focus session completion
   useEffect(() => {
-    const handleFocusSessionCompleted = (event) => {
-      console.log('Track: Focus session completed event received with data:', event.detail);
+    const handleFocusSessionCompleted = () => {
       // Update focus time data with the new session
       updateFocusTimeData();
     };
@@ -170,7 +169,7 @@ export default function Track() {
     return () => {
       window.removeEventListener('focusSessionCompleted', handleFocusSessionCompleted);
     };
-  }, []);
+  }, [updateFocusTimeData]);
 
   // Initialize focus time data with any existing sessions
   useEffect(() => {
@@ -179,12 +178,12 @@ export default function Track() {
     pullFocusSessions()
       .then(updateFocusTimeData)
       .catch(() => {});
-  }, []);
+  }, [updateFocusTimeData]);
 
   // Update stats when focus time data changes
   useEffect(() => {
     calculateStats();
-  }, [focusTimeData]);
+  }, [calculateStats]);
 
   // Format minutes as hours and minutes
   const formatTime = (minutes) => {
