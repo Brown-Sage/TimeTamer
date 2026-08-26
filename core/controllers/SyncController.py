@@ -1,13 +1,22 @@
 import json
 
 import django.utils.timezone
-from django.http import JsonResponse
-from django.utils.dateparse import parse_datetime
-from django.views import View
-
 from django.db import IntegrityError, transaction
+from django.http import JsonResponse
+from django.views import View
+from pydantic import ValidationError as PydanticValidationError
 
+from core.controllers.common import parse_validated, validate_data
 from core.models import FocusSession, Note, Setting, Task
+from core.schemas import (
+    NoteCollectionSchema,
+    NoteItemSchema,
+    SessionItemSchema,
+    SessionsPushSchema,
+    SettingsPutSchema,
+    TaskCollectionSchema,
+    TaskItemSchema,
+)
 
 
 def _require_auth(request):
@@ -22,6 +31,12 @@ def _parse_body(request):
         return json.loads(request.body or '{}')
     except (json.JSONDecodeError, TypeError):
         return None
+
+
+def _ensure_aware(value):
+    if value is not None and django.utils.timezone.is_naive(value):
+        return django.utils.timezone.make_aware(value)
+    return value
 
 
 class SessionController(View):
@@ -49,56 +64,46 @@ class SessionController(View):
         if unauthorized:
             return unauthorized
 
-        payload = _parse_body(request)
-        if payload is None:
+        raw = _parse_body(request)
+        if not isinstance(raw, dict):
             return JsonResponse({'message': 'Invalid JSON'}, status=400)
 
-        items = payload.get('sessions')
-        if items is None:
-            # Convenience: allow posting a bare single session object
-            if 'minutes' in payload:
-                items = [payload]
-            else:
-                return JsonResponse({'message': 'Expected {"sessions": [...]} or a session object'}, status=400)
-        elif not isinstance(items, list):
-            return JsonResponse({'message': '"sessions" must be a list'}, status=400)
+        # Convenience: allow posting a bare single session object
+        if 'sessions' not in raw and 'minutes' in raw:
+            raw = {'sessions': [raw]}
 
-        if len(items) > 500:
-            return JsonResponse({'message': 'Too many sessions in one request'}, status=400)
+        data, error = validate_data(raw, SessionsPushSchema)
+        if error:
+            return error
 
         created, skipped = 0, 0
-        for item in items:
-            if not isinstance(item, dict):
+        for item in data.sessions:
+            # Junk items are skipped, not fatal: an offline queue flush may
+            # contain garbage from old app versions.
+            try:
+                session = SessionItemSchema.model_validate(item)
+            except (PydanticValidationError, ValueError):
                 skipped += 1
                 continue
 
-            minutes = item.get('minutes')
-            client_id = str(item.get('client_id') or '')[:64] or None
-            completed_at = parse_datetime(str(item.get('timestamp') or ''))
-
-            if not isinstance(minutes, int) or isinstance(minutes, bool) or minutes <= 0 or completed_at is None:
-                skipped += 1
-                continue
-
-            if django.utils.timezone.is_naive(completed_at):
-                completed_at = django.utils.timezone.make_aware(completed_at)
+            completed_at = _ensure_aware(session.timestamp)
 
             # Race-safe append: with a client_id, concurrent duplicate pushes
             # resolve to one row instead of crashing; without one, every
             # session is appended (unique constraints ignore NULLs).
-            if client_id:
+            if session.client_id:
                 _, was_created = FocusSession.objects.get_or_create(
                     user=request.user,
-                    client_id=client_id,
+                    client_id=session.client_id,
                     defaults={
-                        'minutes': minutes,
+                        'minutes': session.minutes,
                         'completed_at': completed_at,
                     },
                 )
             else:
                 FocusSession.objects.create(
                     user=request.user,
-                    minutes=minutes,
+                    minutes=session.minutes,
                     completed_at=completed_at,
                     client_id=None,
                 )
@@ -138,11 +143,11 @@ class SettingController(View):
         if unauthorized:
             return unauthorized
 
-        payload = _parse_body(request)
-        if not isinstance(payload, dict) or not isinstance(payload.get('settings'), dict):
-            return JsonResponse({'message': 'Expected {"settings": {...}}'}, status=400)
+        data, error = parse_validated(request, SettingsPutSchema)
+        if error:
+            return error
 
-        settings_map = payload['settings']
+        settings_map = data.settings
         for key, value in settings_map.items():
             Setting.objects.update_or_create(
                 user=request.user,
@@ -159,18 +164,6 @@ class SettingController(View):
         return self.put(request)
 
 
-def _aware(value):
-    """Parse an ISO datetime string, returning None for junk input."""
-    if not value:
-        return None
-    parsed = parse_datetime(str(value))
-    if parsed is None:
-        return None
-    if django.utils.timezone.is_naive(parsed):
-        parsed = django.utils.timezone.make_aware(parsed)
-    return parsed
-
-
 class CollectionSyncController(View):
     """
     Whole-collection sync for client-owned item lists (tasks, notes).
@@ -183,9 +176,8 @@ class CollectionSyncController(View):
 
     model = None                # set by subclasses
     payload_key = 'items'       # expected body key
+    collection_schema = None    # structural schema for the whole payload
     max_items = 500
-
-    known_fields = ()           # fields promoted to columns; the rest land in `extra`
 
     def serialize(self, obj):
         return {
@@ -213,18 +205,18 @@ class CollectionSyncController(View):
         if unauthorized:
             return unauthorized
 
-        payload = _parse_body(request)
-        if payload is None:
+        raw = _parse_body(request)
+        if raw is None:
             return JsonResponse({'message': 'Invalid JSON'}, status=400)
 
-        items = payload.get(self.payload_key)
-        # The key is required: only an explicit empty list may clear the
-        # collection, a malformed body must never wipe stored rows.
-        if not isinstance(items, list):
-            return JsonResponse(
-                {'message': f'Expected {{"{self.payload_key}": [...]}}, got no list'},
-                status=400,
-            )
+        # Structural validation: the payload key must be present and hold a
+        # list. Only an explicit empty list may clear the collection; a
+        # malformed body must never wipe stored rows. Individual items are
+        # validated leniently in build_row.
+        data, error = validate_data(raw, self.collection_schema)
+        if error:
+            return error
+        items = getattr(data, self.payload_key)
 
         if len(items) > self.max_items:
             return JsonResponse({'message': 'Too many items in one request'}, status=400)
@@ -282,7 +274,7 @@ class CollectionSyncController(View):
 class TaskController(CollectionSyncController):
     model = Task
     payload_key = 'tasks'
-    known_fields = ('text', 'title', 'completed', 'completed_at')
+    collection_schema = TaskCollectionSchema
 
     def serialize(self, obj):
         data = super().serialize(obj)
@@ -294,30 +286,30 @@ class TaskController(CollectionSyncController):
         return data
 
     def build_row(self, item):
-        if not isinstance(item, dict):
+        try:
+            item_data = TaskItemSchema.model_validate(item)
+        except (PydanticValidationError, ValueError):
             return None
 
-        client_id = str(item.get('client_id') or '')[:64]
-        title = str(item.get('title') or item.get('text') or '').strip()[:255]
-        if not client_id or not title:
+        title = (item_data.title or item_data.text or '').strip()[:255]
+        if not title:
             return None
 
-        completed_at = _aware(item.get('completed_at')) if item.get('completed') else None
+        completed_at = _ensure_aware(item_data.completed_at) if item_data.completed else None
 
-        extra = {k: v for k, v in item.items() if k not in self.known_fields and k != 'client_id'}
-
-        return client_id, {
+        return item_data.client_id, {
             'title': title,
             'description': '',
-            'completed': bool(item.get('completed')),
+            'completed': item_data.completed,
             'completed_at': completed_at,
             'deleted_at': None,
-        }, extra
+        }, dict(item_data.model_extra or {})
 
 
 class NoteController(CollectionSyncController):
     model = Note
     payload_key = 'notes'
+    collection_schema = NoteCollectionSchema
 
     def serialize(self, obj):
         data = super().serialize(obj)
@@ -325,14 +317,11 @@ class NoteController(CollectionSyncController):
         return data
 
     def build_row(self, item):
-        if not isinstance(item, dict):
+        try:
+            item_data = NoteItemSchema.model_validate(item)
+        except (PydanticValidationError, ValueError):
             return None
 
-        client_id = str(item.get('client_id') or '')[:64]
-        text = str(item.get('text') or '').strip()
-        if not client_id or not text:
-            return None
-
-        extra = {k: v for k, v in item.items() if k != 'text' and k != 'client_id'}
-
-        return client_id, {'text': text[:10000]}, extra
+        return item_data.client_id, {
+            'text': item_data.text[:10000],
+        }, dict(item_data.model_extra or {})

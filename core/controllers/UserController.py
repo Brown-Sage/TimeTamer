@@ -5,25 +5,21 @@ from django.http import JsonResponse
 from django.views import View
 from django.db import IntegrityError
 
-from core.controllers.common import parse_params
+from core.controllers.common import parse_validated
+from core.schemas import RegisterSchema
 
 User = get_user_model()
-
-EMAIL_MAX_LENGTH = 254
 
 
 class UserController(View):
     def post(self, request):
-        params = parse_params(request)
-        email = params.get('email')
-        username = params.get('username')
-        password = params.get('password')
+        params, error = parse_validated(request, RegisterSchema)
+        if error:
+            return error
 
-        if not email or not username or not password:
-            return JsonResponse({'message': 'All fields are required'}, status=400)
-
-        if len(email) > EMAIL_MAX_LENGTH or '@' not in email:
-            return JsonResponse({'message': 'Enter a valid email address'}, status=400)
+        email = params.email
+        username = params.username
+        password = params.password
 
         # The model does not enforce unique emails; the login key is the
         # username, but silently sharing an email across accounts invites

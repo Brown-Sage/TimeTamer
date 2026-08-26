@@ -460,3 +460,103 @@ class BackendHardeningTests(LoggedInMixin, TestCase):
         rows = self.client.get('/api/tasks/').json()['tasks']
         self.assertEqual(len(rows), 1)
         self.assertIn(rows[0]['title'], ('first', 'second'))
+
+
+class PydanticValidationTests(LoggedInMixin, TestCase):
+    """Schema-based request validation (core/schemas.py)."""
+
+    # ---- register ----
+
+    def test_register_rejects_malformed_email_with_field_errors(self):
+        for bad in ('not-an-email', 'a@', '@b.com', 'x' * 250 + '@example.com'):
+            resp = self.client.post('/api/register/', {
+                'email': bad, 'username': 'u1', 'password': 'sup3r-secret-pass',
+            })
+            self.assertEqual(resp.status_code, 400, bad)
+            body = resp.json()
+            self.assertEqual(body['message'], 'Invalid data')
+            self.assertIn('email', body['errors'])
+
+    def test_register_rejects_oversized_username(self):
+        resp = self.client.post('/api/register/', {
+            'email': 'big@example.com',
+            'username': 'x' * 151,
+            'password': 'sup3r-secret-pass',
+        })
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('username', resp.json()['errors'])
+
+    def test_register_strips_whitespace_around_fields(self):
+        resp = self.client.post('/api/register/', {
+            'email': ' padded@example.com ',
+            'username': '  padded  ',
+            'password': 'sup3r-secret-pass',
+        })
+        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.json()['user']['username'], 'padded')
+
+    def test_email_uniqueness_enforced_case_insensitively_at_db_level(self):
+        from django.contrib.auth import get_user_model
+        from django.db import IntegrityError, transaction
+
+        User = get_user_model()
+        User.objects.create_user(
+            username='case-one', email='Mixed@Case.com', password='sup3r-secret-pass',
+        )
+        with transaction.atomic():
+            with self.assertRaises(IntegrityError):
+                User.objects.create_user(
+                    username='case-two', email='mixed@case.COM',
+                    password='sup3r-secret-pass',
+                )
+
+    # ---- sessions ----
+
+    def test_sessions_string_minutes_is_junk_not_coerced(self):
+        resp = self.json_post('/api/sessions/', {'sessions': [
+            {'minutes': '50', 'timestamp': '2026-08-22T10:00:00.000Z'},
+            {'minutes': True, 'timestamp': '2026-08-22T10:00:00.000Z'},
+        ]})
+        self.assertEqual(resp.json(), {'created': 0, 'skipped': 2})
+
+    def test_sessions_over_daily_cap_is_skipped(self):
+        resp = self.json_post('/api/sessions/', {'sessions': [
+            {'minutes': 1441, 'timestamp': '2026-08-22T10:00:00.000Z'},
+        ]})
+        self.assertEqual(resp.json(), {'created': 0, 'skipped': 1})
+
+    def test_sessions_missing_key_and_broken_json_rejected(self):
+        self.assertEqual(self.json_post('/api/sessions/', {}).status_code, 400)
+        self.assertEqual(self.json_post('/api/sessions/', [1, 2]).status_code, 400)
+
+        resp = self.client.post(
+            '/api/sessions/', data='{broken', content_type='application/json'
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    # ---- tasks / notes structure ----
+
+    def test_tasks_missing_key_rejected_even_when_empty_body(self):
+        for payload in ({}, {'tasks': 'nope'}, {'notes': []}):
+            resp = self.json_put('/api/tasks/', payload)
+            self.assertEqual(resp.status_code, 400, payload)
+            self.assertEqual(resp.json()['message'], 'Invalid data')
+
+    def test_notes_missing_key_rejected(self):
+        for payload in ({}, {'tasks': []}, {'notes': 7}):
+            resp = self.json_put('/api/notes/', payload)
+            self.assertEqual(resp.status_code, 400, payload)
+
+    def test_task_whitespace_only_title_skipped(self):
+        resp = self.json_put('/api/tasks/', {'tasks': [
+            {'client_id': 'w1', 'text': '   '},
+        ]})
+        self.assertEqual(resp.json(), {'saved': 0, 'skipped': 1, 'deleted': 0})
+
+    def test_settings_non_dict_value_rejected_with_errors(self):
+        resp = self.json_put('/api/settings/', {'settings': 'nope'})
+        self.assertEqual(resp.status_code, 400)
+
+        resp = self.json_put('/api/settings/', {})
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('settings', resp.json()['errors'])
