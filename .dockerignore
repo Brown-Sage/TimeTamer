@@ -1,0 +1,17 @@
+.git
+.gitignore
+.env
+*.log
+progress.md
+__pycache__/
+*.pyc
+staticfiles/
+db.sqlite3
+
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+node_modules/
+
+pomodoro/test_settings.py
+core/tests.py
