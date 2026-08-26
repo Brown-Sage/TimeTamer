@@ -135,6 +135,12 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', '127.0.0.1'),  # Ensure this is set correctly
         'PORT': os.getenv('DB_PORT', '5432'),
+        # Managed hosts (Neon, RDS, Supabase) require TLS; set DB_SSLMODE=require.
+        # Leave unset for a plain local install without certificates.
+        **(
+            {'OPTIONS': {'sslmode': os.environ['DB_SSLMODE']}}
+            if os.getenv('DB_SSLMODE') else {}
+        ),
     }
 }
 
