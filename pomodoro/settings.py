@@ -43,17 +43,38 @@ CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
         'CSRF_TRUSTED_ORIGINS',
-        'http://127.0.0.1:8000,http://192.168.2.43:8000,http://localhost:8000'
+        # Include the Vite dev server so split development passes Django's
+        # Origin check on unsafe requests (CORS alone is not enough).
+        'http://127.0.0.1:8000,http://192.168.2.43:8000,http://localhost:8000,'
+        'http://localhost:5173,http://127.0.0.1:5173'
     ).split(',')
     if origin.strip()
 ]
 
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
+# Cross-origin API support: the SPA lives on Vercel while Django serves the
+# API from another domain, so browsers need explicit CORS permission for
+# credentialed (cookie) requests.
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        'CORS_ALLOWED_ORIGINS',
+        # Vite dev server defaults, so split development works out of the box.
+        'http://localhost:5173,http://127.0.0.1:5173'
+    ).split(',')
+    if origin.strip()
+]
+CORS_ALLOW_CREDENTIALS = True
+
 # Hardening for non-DEBUG deployments (behind a TLS-terminating proxy).
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    # The SPA and API are different sites: browsers only accept cross-site
+    # cookies marked SameSite=None (and Secure, set above).
+    SESSION_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_SAMESITE = 'None'
     SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30  # 30 days; raise once confident
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -76,12 +97,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'whitenoise.runserver_nostatic',  # Use whitenoise for static file serving
     'core',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # must precede CommonMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
