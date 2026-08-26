@@ -560,3 +560,31 @@ class PydanticValidationTests(LoggedInMixin, TestCase):
         resp = self.json_put('/api/settings/', {})
         self.assertEqual(resp.status_code, 400)
         self.assertIn('settings', resp.json()['errors'])
+
+
+class CrossOriginTests(TestCase):
+    """Split deployment (Vercel SPA -> separate API): CORS preflight."""
+
+    def test_preflight_allows_configured_origin_with_credentials(self):
+        from django.test import override_settings
+
+        client = Client()
+        with override_settings(CORS_ALLOWED_ORIGINS=['https://app.vercel.app']):
+            resp = client.options(
+                '/api/login/',
+                HTTP_ORIGIN='https://app.vercel.app',
+                HTTP_ACCESS_CONTROL_REQUEST_METHOD='POST',
+                HTTP_ACCESS_CONTROL_REQUEST_HEADERS='content-type,x-csrftoken',
+            )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp['Access-Control-Allow-Origin'], 'https://app.vercel.app')
+        self.assertEqual(resp['Access-Control-Allow-Credentials'], 'true')
+
+    def test_preflight_rejects_unknown_origin(self):
+        client = Client()
+        resp = client.options(
+            '/api/login/',
+            HTTP_ORIGIN='https://evil.example',
+            HTTP_ACCESS_CONTROL_REQUEST_METHOD='POST',
+        )
+        self.assertNotIn('Access-Control-Allow-Origin', resp)
