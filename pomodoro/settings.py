@@ -129,14 +129,12 @@ WSGI_APPLICATION = 'pomodoro.wsgi.application'
 
 DATABASES = {
     'default': {
-        # 'ENGINE': 'django.db.backends.sqlite3',
-        # 'NAME': BASE_DIR / 'db.sqlite3',
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('DB_DATABASE', 'time_tamer'),
-        'USER': os.getenv('DB_USERNAME', 'root'),
+        'USER': os.getenv('DB_USERNAME', 'postgres'),
         'PASSWORD': os.getenv('DB_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', '127.0.0.1'),  # Ensure this is set correctly
-        'PORT': os.getenv('DB_PORT', '3306'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
