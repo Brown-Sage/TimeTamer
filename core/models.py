@@ -34,6 +34,19 @@ class User(AbstractUser):
         blank=True
     )
 
+    class Meta(AbstractUser.Meta):
+        constraints = [
+            # Case-insensitive uniqueness: login/duplicate checks compare
+            # emails iexact, so the DB must not allow Foo@x and foo@x.
+            # Empty strings are excluded (users without an email stay legal);
+            # NULLs are naturally distinct.
+            models.UniqueConstraint(
+                models.functions.Lower('email'),
+                condition=~models.Q(email=''),
+                name='uniq_user_email_ci',
+            ),
+        ]
+
     def __str__(self):
         return self.username
 
