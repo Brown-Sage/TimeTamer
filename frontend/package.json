@@ -1,7 +1,7 @@
 {
   "name": "timetamer",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,54 +10,33 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
     "@lottiefiles/dotlottie-react": "^0.13.2",
     "@mui/icons-material": "^6.4.5",
-    "@mui/material": "^6.4.5",
     "axios": "^1.7.9",
-    "bootstrap": "^5.3.5",
     "face-api.js": "^0.22.2",
-    "html-react-parser": "^5.2.3",
     "lottie-react": "^2.4.1",
-    "lucide-react": "^0.474.0",
+    "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-icons": "^5.4.0",
-    "react-live-clock": "^6.1.25",
     "react-router-dom": "^7.1.5",
-    "react-switch": "^7.1.0",
     "react-toastify": "^11.0.3",
-    "reactstrap": "^9.2.3",
     "recharts": "^2.15.3"
   },
   "devDependencies": {
-    "@eslint/js": "^9.17.0",
+    "@tailwindcss/vite": "^4.0.3",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.20",
     "eslint": "^9.17.0",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.14.0",
-    "postcss": "^8.5.1",
     "tailwindcss": "^4.0.3",
     "vite": "^6.1.1",
     "vite-plugin-pwa": "^0.21.1"
   },
-  "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
-  "main": "eslint.config.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Brown-Sage/TimeTamer.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Brown-Sage/TimeTamer/issues"
-  },
-  "homepage": "https://github.com/Brown-Sage/TimeTamer#readme"
+  "description": "TimeTamer frontend — React + Vite + Tailwind",
+  "license": "ISC"
 }

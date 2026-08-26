@@ -1,202 +1,134 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import "../styles/Theme.css";
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import AmbientScene from './AmbientScene'
 
-// Placeholder backgrounds
-const placeholderBgs = [
-  { color: 'linear-gradient(to right, #f12711, #f5af19)' },
-  { color: 'linear-gradient(to right, #4e54c8, #8f94fb)' },
-  { color: 'linear-gradient(to right, #11998e, #38ef7d)' },
-  { color: 'linear-gradient(to right, #ee0979, #ff6a00)' },
-  { color: 'linear-gradient(to right, #8e2de2, #4a00e0)' },
-  { color: 'linear-gradient(to right, #fc4a1a, #f7b733)' },
-  { color: 'linear-gradient(to right, #00b09b, #96c93d)' },
-  { color: 'linear-gradient(to right, #ad5389, #3c1053)' },
-  { color: 'linear-gradient(to right, #667db6, #0082c8, #0082c8, #667db6)' },
-  { color: 'linear-gradient(to right, #544a7d, #ffd452)' }
-];
+const GRADIENTS = [
+    'linear-gradient(160deg, #1c1830, #3b2b52 45%, #6b4060 75%, #8f5560)',
+    'linear-gradient(160deg, #0f2027, #203a43, #2c5364)',
+    'linear-gradient(160deg, #232526, #414345)',
+    'linear-gradient(160deg, #2b1055, #7597de)',
+    'linear-gradient(160deg, #1a2980, #26d0ce)',
+    'linear-gradient(160deg, #141e30, #243b55)',
+    'linear-gradient(160deg, #000428, #004e92)',
+    'linear-gradient(160deg, #360033, #0b8793)',
+]
 
-// Function to apply background to multiple elements for reliability
-const applyBackgroundToElements = (bgValue, isImage = false) => {
-  try {
-    const value = isImage ? `url(${bgValue})` : bgValue;
-    
-    // Apply to multiple elements to ensure it works consistently
-    // Apply to HTML element (most reliable for full page backgrounds)
-    document.documentElement.style.background = value;
-    document.documentElement.style.backgroundAttachment = 'fixed';
-    document.documentElement.style.backgroundSize = 'cover';
-    document.documentElement.style.backgroundPosition = 'center';
-    
-    // Apply to body as fallback
-    document.body.style.background = 'transparent';
-    
-    // Also set a CSS variable that can be used in multiple places
-    document.documentElement.style.setProperty('--app-background', value);
-    
-    // Add a class to the HTML element for additional styling hooks
-    document.documentElement.classList.add('custom-background');
-    
-    console.log("Background applied successfully:", value);
-    return true;
-  } catch (error) {
-    console.error("Error applying background:", error);
-    return false;
-  }
-};
+function applyBackground(value, isImage = false) {
+    const el = document.documentElement
+    el.style.background = isImage ? `url(${value})` : value
+    el.style.backgroundAttachment = 'fixed'
+    el.style.backgroundSize = 'cover'
+    el.style.backgroundPosition = 'center'
+    el.classList.add('custom-background')
+}
 
 export default function Theme() {
-  const [activeTab, setActiveTab] = useState('static');
-  const navigate = useNavigate();
+    const [tab, setTab] = useState('gallery')
+    const navigate = useNavigate()
 
-  // Use useEffect to make sure the background is not overridden
-  useEffect(() => {
-    // Set overflow hidden on body to prevent scrolling behind the modal
-    document.body.style.overflow = 'hidden';
-    
-    // Cleanup function to restore scrolling when component unmounts
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, []);
-
-  const handleClose = () => {
-    navigate('/');
-  };
-
-  const applyBackground = (bgColor) => {
-    // Apply the background
-    const success = applyBackgroundToElements(bgColor);
-    
-    if (success) {
-      // Save the selection to localStorage
-      try {
-        localStorage.setItem('selectedBackground', bgColor);
-        localStorage.removeItem('selectedBackgroundImage'); // Clear any previous image
-        
-        // Add a timestamp to track when it was last set
-        localStorage.setItem('backgroundLastSet', Date.now().toString());
-      } catch (e) {
-        console.error("Error saving background to localStorage:", e);
-      }
-    }
-    
-    // Navigate back to home page after applying background
-    setTimeout(() => {
-      navigate('/');
-    }, 300);
-  };
-
-  const handleFileUpload = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        // File size check (10MB limit)
-        if (file.size > 10 * 1024 * 1024) {
-          alert("Image is too large. Please select an image under 10MB.");
-          return;
+    useEffect(() => {
+        document.body.style.overflow = 'hidden'
+        return () => {
+            document.body.style.overflow = ''
         }
-        
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const imageData = event.target?.result;
-          if (imageData) {
-            // Apply the background with the image
-            const success = applyBackgroundToElements(imageData, true);
-            
-            if (success) {
-              // Save the image data to localStorage
-              try {
-                localStorage.setItem('selectedBackgroundImage', imageData.toString());
-                localStorage.removeItem('selectedBackground'); // Clear any previous color/gradient
-                
-                // Add a timestamp to track when it was last set
-                localStorage.setItem('backgroundLastSet', Date.now().toString());
-              } catch (e) {
-                console.error("Error saving background image to localStorage:", e);
-                
-                // If localStorage fails due to the image being too large, try storing just the fact that
-                // we're using a custom image and keep it in memory
-                localStorage.setItem('hasCustomBackground', 'true');
-              }
+    }, [])
+
+    const applyGradient = (bg) => {
+        applyBackground(bg)
+        localStorage.setItem('selectedBackground', bg)
+        localStorage.removeItem('selectedBackgroundImage')
+        setTimeout(() => navigate('/'), 250)
+    }
+
+    const handleUpload = () => {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = 'image/*'
+        input.onchange = (e) => {
+            const file = e.target.files?.[0]
+            if (!file) return
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Image is too large — pick one under 10MB.')
+                return
             }
-            
-            // Navigate back to home page after applying background
-            setTimeout(() => {
-              navigate('/');
-            }, 300);
-          }
-        };
-        
-        reader.onerror = () => {
-          console.error("Error reading file");
-          alert("There was a problem loading your image. Please try again.");
-        };
-        
-        reader.readAsDataURL(file);
-      }
-    };
-    input.click();
-  };
-  
-  return (
-    <div className="theme-overlay">
-      <div className="theme-modal">
-        <div className="theme-header">
-          <h2>Background Themes</h2>
-          <button className="close-btn" onClick={handleClose}>×</button>
-        </div>
-        
-        <div className="theme-tabs">
-          <button 
-            className={`tab-btn ${activeTab === 'static' ? 'active' : ''}`}
-            onClick={() => setActiveTab('static')}
-          >
-            Static Themes
-          </button>
-          <button 
-            className={`tab-btn ${activeTab === 'live' ? 'active' : ''}`}
-            onClick={() => setActiveTab('live')}
-          >
-            Live Themes
-          </button>
-        </div>
+            const reader = new FileReader()
+            reader.onload = (event) => {
+                const data = event.target?.result
+                if (!data) return
+                try {
+                    applyBackground(data, true)
+                    localStorage.setItem('selectedBackgroundImage', data)
+                    localStorage.removeItem('selectedBackground')
+                } catch {
+                    localStorage.setItem('hasCustomBackground', 'true')
+                }
+                setTimeout(() => navigate('/'), 250)
+            }
+            reader.onerror = () => alert('Could not read that file. Try again.')
+            reader.readAsDataURL(file)
+        }
+        input.click()
+    }
 
-        <div className="theme-content">
+    return (
+        <div className="relative flex min-h-screen items-center justify-center p-6">
+            <AmbientScene />
+            <div className="rounded-3xl border border-white/10 bg-panel flex max-h-[85vh] w-full max-w-lg flex-col p-7">
+                <header className="mb-5 flex items-center justify-between">
+                    <h2 className="font-display text-2xl font-semibold text-cream">Skin</h2>
+                    <button
+                        type="button"
+                        onClick={() => navigate('/')}
+                        aria-label="Close"
+                        className="rounded-full px-4 py-1.5 text-sm font-semibold text-parchment transition hover:text-cream"
+                    >
+                        esc
+                    </button>
+                </header>
 
-          
-          <div className="theme-grid">
-            {placeholderBgs.slice(0, 5).map((bg, index) => (
-              <div 
-                key={`top-${index}`} 
-                className="theme-item"
-                onClick={() => applyBackground(bg.color)}
-                style={{ background: bg.color }}
-              />
-            ))}
-          </div>
-          
-          <div className="theme-grid">
-            {placeholderBgs.slice(5, 10).map((bg, index) => (
-              <div 
-                key={`bottom-${index}`} 
-                className="theme-item"
-                onClick={() => applyBackground(bg.color)}
-                style={{ background: bg.color }}
-              />
-            ))}
-          </div>
+                <div className="mb-5 flex gap-1 rounded-full border border-white/10 bg-black/20 p-1">
+                    {['gallery', 'upload'].map((key) => (
+                        <button
+                            key={key}
+                            type="button"
+                            onClick={() => setTab(key)}
+                            className={`flex-1 rounded-full py-2 text-xs font-bold tracking-wide transition-colors ${
+                                tab === key ? 'bg-ember/90 text-cocoa' : 'text-parchment hover:text-cream'
+                            }`}
+                        >
+                            {key === 'gallery' ? 'gradients' : 'your image'}
+                        </button>
+                    ))}
+                </div>
 
-          <div className="upload-container">
-            <button onClick={handleFileUpload} className="upload-btn">
-              Upload Custom Background
-            </button>
-          </div>
+                {tab === 'gallery' ? (
+                    <div className="-mr-2 grid grid-cols-3 gap-3 overflow-y-auto pr-2 sm:grid-cols-4">
+                        {GRADIENTS.map((bg, i) => (
+                            <button
+                                key={i}
+                                type="button"
+                                onClick={() => applyGradient(bg)}
+                                aria-label={`Apply gradient ${i + 1}`}
+                                className="aspect-video rounded-2xl border border-white/10 transition-transform hover:scale-105 hover:border-ember/70"
+                                style={{ background: bg }}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center gap-4 py-6">
+                        <p className="text-sm text-parchment">
+                            any image under 10MB — it stays on this device.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={handleUpload}
+                            className="rounded-full bg-ember px-6 py-3 font-display text-sm font-bold text-cocoa transition hover:bg-golden"
+                        >
+                            choose an image
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    )
 }

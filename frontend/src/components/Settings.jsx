@@ -1,82 +1,96 @@
-import "../styles/Settings.css";
-import { Switch } from "@mui/material";
-import CloseIcon from '@mui/icons-material/Close';
-import { useNavigate } from "react-router-dom";
-import { useTimer } from "../context/TimerContext";
+import { useNavigate } from 'react-router-dom'
+import { IoClose } from 'react-icons/io5'
+import AmbientScene from './AmbientScene'
+import { useTimer } from '../context/TimerContext'
+
+const SECTIONS = [
+    {
+        title: 'Flow',
+        hint: 'what happens when a session ends.',
+        items: [
+            { key: 'autoStartBreaks', label: 'Auto-start breaks' },
+            { key: 'autoStartPomodoros', label: 'Auto-start next focus' },
+            { key: 'longBreakInterval', label: 'Long break every 4th session' },
+        ],
+    },
+    {
+        title: 'Tasks',
+        hint: 'how task timers behave on finish.',
+        items: [
+            { key: 'autoCheckTasks', label: 'Auto-check finished tasks' },
+            { key: 'autoSwitchTasks', label: 'Auto-start the next task' },
+        ],
+    },
+]
 
 export default function Settings() {
-    const navigate = useNavigate();
-    const { timerPreferences, updatePreference } = useTimer();
-
-    const handleChange = (key) => (event) => {
-        updatePreference(key, event.target.checked);
-    };
+    const navigate = useNavigate()
+    const { timerPreferences, updatePreference } = useTimer()
 
     return (
-        <div className="setcontainer">
-            <div className="alphaheader">
-                <div className="bar">
-                    <span className="setting"> SETTING </span>
-                    <button onClick={() => navigate("/")} className="x"> <CloseIcon /> </button>
-                </div>
-                
-                <div className="timeoptions">
+        <div className="relative flex min-h-screen items-center justify-center p-6">
+            <AmbientScene />
+            <div className="rounded-3xl border border-white/10 bg-panel w-full max-w-md p-8">
+                <header className="mb-7 flex items-center justify-between">
                     <div>
-                        <span>Auto Start Breaks</span>
-                        <div className="switch-container">
-                            <Switch 
-                                checked={timerPreferences.autoStartBreaks}
-                                onChange={handleChange('autoStartBreaks')}
-                                color="primary"
-                            />
-                        </div>
+                        <h1 className="font-display text-2xl font-semibold text-cream">Tune</h1>
+                        <p className="mt-0.5 text-sm text-parchment">
+                            small behaviors, your way.
+                        </p>
                     </div>
-                    
-                    <div>
-                        <span>Auto Start Pomodoros</span>
-                        <div className="switch-container">
-                            <Switch 
-                                checked={timerPreferences.autoStartPomodoros}
-                                onChange={handleChange('autoStartPomodoros')}
-                                color="primary"
-                            />
+                    <button
+                        type="button"
+                        onClick={() => navigate('/')}
+                        aria-label="Back to home"
+                        className="rounded-full p-2 text-parchment transition hover:text-clay"
+                    >
+                        <IoClose size={20} />
+                    </button>
+                </header>
+
+                {SECTIONS.map(({ title, hint, items }) => (
+                    <section key={title} className="mb-6 last:mb-0">
+                        <h2 className="text-xs font-bold uppercase tracking-widest text-ember">
+                            {title}
+                        </h2>
+                        <p className="mb-3 mt-0.5 text-xs text-parchment/70">{hint}</p>
+                        <div className="divide-y divide-white/8 overflow-hidden rounded-2xl border border-white/10 bg-black/15">
+                            {items.map(({ key, label }) => (
+                                <label
+                                    key={key}
+                                    className="flex cursor-pointer items-center justify-between px-4 py-3.5"
+                                >
+                                    <span className="text-sm font-medium text-cream">{label}</span>
+                                    <Toggle
+                                        checked={Boolean(timerPreferences[key])}
+                                        onChange={(v) => updatePreference(key, v)}
+                                    />
+                                </label>
+                            ))}
                         </div>
-                    </div>
-                    
-                    <div>
-                        <span>Long break interval</span>
-                        <div className="switch-container">
-                            <Switch 
-                                checked={timerPreferences.longBreakInterval}
-                                onChange={handleChange('longBreakInterval')}
-                                color="primary"
-                            />
-                        </div>
-                    </div>
-                </div>
-                <div className="taskoptions">
-                    <div>
-                        <span>Auto Check Tasks</span>
-                        <div className="switch-container">
-                            <Switch 
-                                checked={timerPreferences.autoCheckTasks}
-                                onChange={handleChange('autoCheckTasks')}
-                                color="primary"
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <span>Auto Switch Tasks</span>
-                        <div className="switch-container">
-                            <Switch 
-                                checked={timerPreferences.autoSwitchTasks}
-                                onChange={handleChange('autoSwitchTasks')}
-                                color="primary"
-                            />
-                        </div>
-                    </div>
-                </div>
+                    </section>
+                ))}
             </div>
         </div>
-    );
+    )
+}
+
+function Toggle({ checked, onChange }) {
+    return (
+        <button
+            type="button"
+            role="switch"
+            aria-checked={checked}
+            onClick={() => onChange(!checked)}
+            className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ${
+                checked ? 'bg-ember' : 'bg-black/30'
+            }`}
+        >
+            <span
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-cream shadow transition-all duration-200 ${
+                    checked ? 'left-[22px]' : 'left-0.5'
+                }`}
+            />
+        </button>
+    )
 }

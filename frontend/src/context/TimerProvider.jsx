@@ -196,19 +196,26 @@ export function TimerProvider({ children }) {
         if (!isRunning) return undefined;
         if (settings.webcamDetection && !isUserPresent) return undefined;
 
+        // Tick against wall-clock so background-tab throttling can't drift the clock.
+        let lastTick = Date.now();
         const interval = setInterval(() => {
-            const { hours: h, minutes: m, seconds: s } = timeRef.current;
+            const now = Date.now();
+            const elapsed = Math.floor((now - lastTick) / 1000);
+            if (elapsed <= 0) return;
+            lastTick = now;
 
-            if (s > 0) {
-                timeRef.current = { hours: h, minutes: m, seconds: s - 1 };
-            } else if (m > 0) {
-                timeRef.current = { hours: h, minutes: m - 1, seconds: 59 };
-            } else if (h > 0) {
-                timeRef.current = { hours: h - 1, minutes: 59, seconds: 0 };
-            } else {
+            let { hours: h, minutes: m, seconds: s } = timeRef.current;
+            let remaining = h * 3600 + m * 60 + s - elapsed;
+
+            if (remaining <= 0) {
                 completeSession();
                 return;
             }
+            timeRef.current = {
+                hours: Math.floor(remaining / 3600),
+                minutes: Math.floor((remaining % 3600) / 60),
+                seconds: remaining % 60,
+            };
 
             setHours(timeRef.current.hours);
             setMinutes(timeRef.current.minutes);

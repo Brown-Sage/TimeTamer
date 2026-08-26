@@ -1,148 +1,72 @@
+@import 'tailwindcss';
+@import 'react-toastify/dist/ReactToastify.css';
+
 /* ============================================================
-   TimeTamer — "Quiet Paper" design system
-   Warm paper surfaces, ink typography, one terracotta accent,
-   hairline borders and soft diffuse shadows. No blur, no glow.
-   Custom wallpapers (Theme picker) still override the canvas.
+   TimeTamer — clean minimal dark
+   Solid near-black canvas, one indigo accent, no animations.
    ============================================================ */
 
-:root {
-    /* Canvas: flat warm paper with the faintest corner tints */
-    --app-background:
-        radial-gradient(900px 600px at 88% -12%, rgba(194, 94, 58, 0.05), transparent 60%),
-        radial-gradient(800px 560px at -8% 106%, rgba(124, 144, 112, 0.06), transparent 58%),
-        #f4efe4;
-
+@theme {
     /* Surfaces */
-    --surface: #fdfaf3;
-    --surface-strong: #ffffff;
-    --surface-dim: rgba(38, 32, 25, 0.04);
+    --color-night: #12141a;
+    --color-panel: #1a1d25;
+    --color-raised: #22262f;
 
     /* Ink */
-    --ink: #27211a;
-    --ink-soft: #6e6455;
-    --ink-faint: #a49a8a;
+    --color-cream: #e9ecf2;
+    --color-parchment: #9aa3b2;
+    --color-cocoa-faint: #6b7484;
 
-    /* Lines & accents */
-    --line: #e3dac6;
-    --line-soft: #ebe3d2;
-    --accent: #c25e3a;
-    --accent-deep: #a84c2c;
-    --accent-soft: rgba(194, 94, 58, 0.09);
-    --sage: #75916a;
-    --sage-deep: #5c7652;
-    --sage-soft: rgba(117, 145, 106, 0.12);
-    --danger: #ad4433;
-    --danger-soft: rgba(173, 68, 51, 0.08);
-
-    /* Shape & depth */
-    --radius-lg: 22px;
-    --radius-md: 14px;
-    --radius-sm: 9px;
-    --shadow-card:
-        0 1px 2px rgba(62, 50, 34, 0.05),
-        0 14px 36px -20px rgba(62, 50, 34, 0.28);
-    --shadow-pop:
-        0 2px 4px rgba(62, 50, 34, 0.06),
-        0 24px 56px -24px rgba(62, 50, 34, 0.35);
+    /* Accents */
+    --color-ember: #5b8def;
+    --color-golden: #7ba4f4;
+    --color-sage: #6fbf95;
+    --color-clay: #e07a72;
+    --color-cocoa: #12141a;
 
     /* Type */
-    --font-display: 'Fraunces', Georgia, serif;
+    --font-display: 'Inter', sans-serif;
     --font-body: 'Inter', 'Segoe UI', sans-serif;
+
+    /* Shape */
+    --radius-glass: 24px;
+    --radius-control: 14px;
 }
 
 html,
 body {
     margin: 0;
     padding: 0;
-    min-height: 100vh;
-    width: 100%;
-}
-
-html {
-    background: var(--app-background);
-    background-attachment: fixed !important;
-    background-size: cover !important;
-    background-position: center !important;
-    min-height: 100vh;
-    height: 100%;
-}
-
-html.custom-background {
-    background-repeat: no-repeat !important;
+    min-height: 100%;
 }
 
 body {
-    background-color: transparent !important;
-    min-height: 100vh;
-    height: 100%;
+    background-color: var(--color-night);
     font-family: var(--font-body);
-    font-size: 15px;
-    line-height: 1.55;
-    color: var(--ink);
+    line-height: 1.65;
+    color: var(--color-cream);
     -webkit-font-smoothing: antialiased;
 }
 
 #root {
     min-height: 100vh;
-    height: 100%;
-}
-
-/* Shared card — used across widgets */
-.glass-card {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-card);
-}
-
-h1,
-h2,
-h3 {
-    font-family: var(--font-display);
-    color: var(--ink);
-    letter-spacing: -0.01em;
-}
-
-button,
-input,
-select,
-textarea {
-    font-family: var(--font-body);
-    color: inherit;
 }
 
 ::selection {
-    background: rgba(194, 94, 58, 0.22);
-    color: var(--ink);
+    background: rgb(91 141 239 / 0.35);
+    color: var(--color-cream);
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
 }
-
 ::-webkit-scrollbar-track {
     background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-    background: #d8cdb6;
-    border-radius: 10px;
+    background: #2c313c;
+    border-radius: 8px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-    background: #c7ba9e;
-}
-
-/* Keep the wallpaper visible through app containers */
-.container,
-.home,
-#root > div {
-    background-color: transparent !important;
-}
-
-[data-reactroot],
-.app-container,
-.main-container {
-    background-color: transparent !important;
+    background: #3a404d;
 }

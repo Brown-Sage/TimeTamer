@@ -1,0 +1,29 @@
+@theme {
+  --color-primary: #f5f1e8;
+  --color-secondary: #c9c2b4;
+  --color-tertiary: #e8a87c;
+  --color-accent: #f6c177;
+  --color-success: #9ecfae;
+  --color-danger: #e08e81;
+  --color-neutral: #2b2622;
+  --font-display: "Quicksand";
+  --font-h1: "Quicksand";
+  --font-body-md: "Nunito";
+  --text-display: 3.5rem;
+  --text-h1: 2rem;
+  --text-body-md: 1rem;
+  --leading-display: 1.05;
+  --leading-h1: 1.2;
+  --leading-body-md: 1.65;
+  --tracking-display: 0.01em;
+  --tracking-h1: 0.01em;
+  --font-weight-display: 600;
+  --font-weight-h1: 600;
+  --font-weight-body-md: 400;
+  --radius-sm: 14px;
+  --radius-md: 22px;
+  --radius-lg: 30px;
+  --spacing-sm: 10px;
+  --spacing-md: 18px;
+  --spacing-lg: 28px;
+}
